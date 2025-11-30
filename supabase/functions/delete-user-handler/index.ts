@@ -1,5 +1,6 @@
 // Purpose:
 // delete user invoked from frontend - Improved with better logging and error handling
+// Updated: Prevent users with any subscription from deleting their account
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.0";
@@ -76,6 +77,47 @@ serve(async (req) => {
       `[DELETE-USER] Starting account deletion for user: ${user.email} (ID: ${user.id})`
     );
 
+
+    // ============================
+    // Purpose: Prevent deletion if user has active subscriptions
+    // ============================
+    const { data: subscriptions, error: subError } =
+      await supabaseAdmin
+        .from("user_subscriptions")
+        .select("*")
+        .eq("user_id", user.id);
+
+    if (subError) {
+      console.error("[DELETE-USER] Error checking subscriptions:", subError);
+      return new Response(
+        JSON.stringify({
+          error: "Unable to check subscriptions",
+          details: subError.message,
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 500,
+        }
+      );
+    }
+
+    if (subscriptions && subscriptions.length > 0) {
+      console.log(
+        `[DELETE-USER] User has active subscriptions, cannot delete account`
+      );
+      return new Response(
+        JSON.stringify({
+          error: "Account deletion blocked",
+          message: "User has active subscriptions. Cancel them before deleting account.",
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 403,
+        }
+      );
+    }
+
+
     // First, delete related records from your custom tables
     try {
       console.log("[DELETE-USER] Starting custom table cleanup...");
@@ -92,7 +134,7 @@ serve(async (req) => {
         console.log("[DELETE-USER] Profile deleted successfully");
       }
 
-      // Delete from enrollments table
+      // Delete from course enrollments table
       const { error: enrollmentError } = await supabaseAdmin
         .from("enrollments")
         .delete()
@@ -105,6 +147,21 @@ serve(async (req) => {
         );
       } else {
         console.log("[DELETE-USER] Enrollments deleted successfully");
+      }
+
+      // Delete from course enrollments table
+      const { error: CohortEnrollmentError } = await supabaseAdmin
+        .from("cohort_enrollments")
+        .delete()
+        .eq("user_id", user.id);
+
+      if (CohortEnrollmentError) {
+        console.warn(
+          "[DELETE-USER] Error deleting cohort enrollments:",
+          CohortEnrollmentError
+        );
+      } else {
+        console.log("[DELETE-USER] Cohort enrollments deleted successfully");
       }
 
       // Delete from user_subscriptions table

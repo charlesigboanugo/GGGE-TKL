@@ -1,3 +1,5 @@
+import { toast } from "react-hot-toast"; // optional: for notifications
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/supabase_client";
 import { useUser } from "@/contexts/UserContext";
@@ -26,7 +28,15 @@ export default function DashboardMembership() {
   const [cohorts, setCohorts] = useState<Cohort[]>([]);
   //const [enrolledVariantIds, setEnrolledVariantIds] = useState<Set<string>>(new Set());
   const [enrolledCohortVariantIds, setEnrolledCohortVariantIds] = useState<Set<string>>(new Set());
+
   const [subStatus, setSubStatus] = useState<string | null>(null);
+  
+  // =================== CHANGES MADE: NEW STATE ===================
+  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false); // tracks autorenew status
+  const [isToggling, setIsToggling] = useState(false); // prevents double click
+  const [isLoadingPortal, setIsLoadingPortal] = useState(false); // loading state for billing portal
+  // ===============================================================
+
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -41,7 +51,6 @@ export default function DashboardMembership() {
         ]);
         if (cErr || cvErr) throw cErr || cvErr;
 
-        // group variants under courses
         const coursesMapped: Course[] = (coursesData || []).map((c: any) => ({
           ...c,
           variants: (courseVariants || []).filter((v: any) => v.course_id === c.id)
@@ -82,8 +91,6 @@ export default function DashboardMembership() {
             .select("cohort_variant_ids")
             .eq("user_id", currentUser.id);
 
-          console.log(enrollments);
-
           (enrollments || []).forEach((row: any) => {
             if (Array.isArray(row.cohort_variant_ids)) {
               row.cohort_variant_ids.forEach((id: string) => enrolledCohortSet.add(id));
@@ -91,17 +98,24 @@ export default function DashboardMembership() {
           });
         }
 
-        // fetch subscription status for the user
+        // fetch subscription status
+        // =================== CHANGES MADE: FETCH cancel_at_period_end ===================
         if (currentUser?.id) {
           const { data: subs } = await supabase
             .from("user_subscriptions")
-            .select("status, current_period_end")
+            .select("status, current_period_end, cancel_at_period_end")
             .eq("user_id", currentUser.id)
             .maybeSingle();
 
-          if (subs && subs.status) setSubStatus(subs.status);
-          else setSubStatus(null);
+          if (subs) {
+            setSubStatus(subs.status);
+            setCancelAtPeriodEnd(!!subs.cancel_at_period_end);
+          } else {
+            setSubStatus(null);
+            setCancelAtPeriodEnd(false);
+          }
         }
+        // ===============================================================
 
         if (!mounted) return;
         setCourses(coursesMapped);
@@ -110,7 +124,7 @@ export default function DashboardMembership() {
         setEnrolledCohortVariantIds(enrolledCohortSet);
         setError(null);
       } catch (err: any) {
-        console.error("DashboardMembership load error", err);
+        //console.error("DashboardMembership load error", err);
         setError("Failed to load membership data. Try refreshing.");
       } finally {
         if (mounted) setLoading(false);
@@ -123,42 +137,72 @@ export default function DashboardMembership() {
     };
   }, [currentUser]);
 
-  const isSubscribed = subStatus === "active" || subStatus === "trialing";
+  //const isSubscribed = subStatus === "active" || subStatus === "trialing";
+  const isSubscribed = ["active", "trialing", "past_due", "unpaid"].includes(subStatus || "");
 
-  // helpers
   /*function isVariantEnrolled(variantId?: string) {
     if (!variantId) return false;
     return enrolledVariantIds.has(variantId);
   }*/
 
-  // helpers
   function isCohortVariantEnrolled(variantId?: string) {
     if (!variantId) return false;
     return enrolledCohortVariantIds.has(variantId);
   }
 
-  // What to show for courses depending on subscription
   const visibleCourses = isSubscribed ? courses : [];
-
   const visibleCohorts = isSubscribed ? cohorts : [];
 
-  //cohorts.map(c => console.log(c.variants));
-  //console.log(enrolledCohortVariantIds);
+  // =================== NEW: FULL PROGRAM AUTO-UNLOCK LOGIC ===================
+  function hasFullProgram() {
+    return enrolledCohortVariantIds.has("full_program");
+  }
+
+  function isCohortVariantUnlocked(variantId?: string) {
+    if (!variantId) return false;
+    if (hasFullProgram()) return true; // full program unlocks ALL
+    return isCohortVariantEnrolled(variantId);
+  }
+
+  // =================== CHANGES MADE: TOGGLE BUTTON HANDLER ===================
+  async function handleToggleSubscription() {
+    if (!currentUser?.email) return;
+    setIsToggling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("toggle-subscription", {
+        body: { email: currentUser.email } // backend determines subscription
+      });
+
+      if (error) throw error;
+      // toggle local state for instant UI feedback
+      setCancelAtPeriodEnd(prev => !prev);
+      toast.success(data?.message || "Subscription updated successfully");
+    } catch (err) {
+      //console.error(err);
+      toast.error("Failed to update subscription. Try again.");
+    } finally {
+      setIsToggling(false);
+    }
+  }
+  // ===============================================================
 
   async function handleOpenBillingPortal() {
-    // Try to call a server function / endpoint that you provide to create a billing portal session.
-    // This is a best-effort client-side handler — adjust to your backend.
+    if (isLoadingPortal) return; // prevent multiple clicks
+    setIsLoadingPortal(true);
     try {
       const { data } = await supabase.functions.invoke("create-billing-portal", { body: {}});
       if (data && (data as any).url) {
         window.open((data as any).url, "_blank");
       } else {
-        alert("Could not open billing portal. Please visit the Billing page in your account.");
+        toast.error("Could not open billing portal. Please visit the Billing page in your account.");
       }
     } catch (err) {
-      console.error(err);
-      alert("Billing portal is not configured. Contact support.");
+      //console.error(err);
+      toast.error("Billing portal is not configured. Contact support.");
+    } finally {
+      setIsLoadingPortal(false);
     }
+    
   }
 
   if (loading) {
@@ -200,21 +244,48 @@ export default function DashboardMembership() {
             <div className="mt-4 flex flex-wrap gap-3">
               {isSubscribed ? (
                 <>
-                  <button onClick={handleOpenBillingPortal} className="inline-flex items-center gap-2 px-4 py-2 bg-white/6 rounded-md font-medium hover:bg-white/10">
-                    <CreditCard className="w-4 h-4" /> Manage subscription
+                  {/* =================== CHANGES MADE: SINGLE TOGGLE BUTTON =================== */}
+                  { subStatus === "active" && (
+                    <button 
+                      onClick={handleToggleSubscription} 
+                      disabled={isToggling}
+                      className={`inline-flex items-center gap-2 px-4 py-2 rounded-md font-medium
+                        ${isToggling ? 'bg-gray-500 cursor-not-allowed' : 'bg-white/6 hover:bg-white/10'}`}
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      {isToggling 
+                        ? cancelAtPeriodEnd 
+                          ? "Resuming..." 
+                          : "Cancelling..." 
+                        : cancelAtPeriodEnd 
+                          ? "Resume Subscription" 
+                          : "Cancel Auto-Renew"
+                      }
+                    </button>
+                  )}
+                  {/* =============================================================== */}
+
+                  {/* --- ALTERNATIVE: Stripe Billing Portal --- */}
+                  <button
+                    onClick={handleOpenBillingPortal}
+                    disabled={isLoadingPortal}
+                    className={`inline-flex items-center gap-2 px-4 py-2 bg-white/6 rounded-md font-medium 
+                      ${isToggling ? 'bg-gray-500 cursor-not-allowed' : 'bg-white/6 hover:bg-white/10'} hover:bg-white/10`}
+                  >
+                    <CreditCard className="w-4 h-4" /> {isLoadingPortal ? "Loading..." : "Manage subscription"}
                   </button>
 
-                  <Link to="/course-buying-page" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-md font-medium hover:bg-blue-500">
+                  <Link to="/pricing-page" className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 rounded-md font-medium hover:bg-blue-500">
                     <BookOpen className="w-4 h-4" /> Browse courses
                   </Link>
                 </>
               ) : (
                 <>
-                  <Link to="/course-buying-page" className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 rounded-md font-medium hover:bg-amber-400">
+                  <Link to="/pricing-page" className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 rounded-md font-medium hover:bg-amber-400">
                     <Users className="w-4 h-4" /> Get Membership
                   </Link>
 
-                  <Link to="/course-buying-page" className="inline-flex items-center gap-2 px-4 py-2 bg-white/6 rounded-md font-medium hover:bg-white/10">
+                  <Link to="/pricing-page" className="inline-flex items-center gap-2 px-4 py-2 bg-white/6 rounded-md font-medium hover:bg-white/10">
                     <BookOpen className="w-4 h-4" /> View buying options
                   </Link>
                 </>
@@ -259,7 +330,14 @@ export default function DashboardMembership() {
           </div>
           <div>
             <div className="text-sm text-slate-300">Membership</div>
-            <div className="font-semibold text-lg">{isSubscribed ? subStatus : "Not Subscribed"}</div>
+            <div className="font-semibold text-lg">
+              {subStatus === "active" && !cancelAtPeriodEnd && "Active Member"}
+              {subStatus === "active" && cancelAtPeriodEnd && "Active (will cancel at period end)"}
+              {subStatus === "trialing" && "Trialing"}
+              {subStatus === "past_due" && "Payment overdue – please update your card to avoid cancellation"}
+              {subStatus === "unpaid" && "Payment failed – subscription would be cancelled soon, update your payment to reactivate"}
+              {isSubscribed ? "" : "Not Subscribed"}
+            </div>
           </div>
         </div>
       </div>
@@ -270,7 +348,7 @@ export default function DashboardMembership() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold">Courses</h3>
             {!isSubscribed && (
-              <Link to="/course-buying-page" className="text-sm text-amber-400">Upgrade to unlock all</Link>
+              <Link to="/pricing-page" className="text-sm text-amber-400">Upgrade to unlock all</Link>
             )}
           </div>
 
@@ -307,7 +385,7 @@ export default function DashboardMembership() {
                 </div>
 
                 <div className="mt-3 flex items-center justify-between">
-                  <Link to={`/courses/${course.id}`} className="text-sm text-slate-300">View course</Link>
+                  <Link to='/learning-dashboard' className="text-sm text-slate-300">View More</Link>
                 </div>
               </article>
             ))}
@@ -318,7 +396,7 @@ export default function DashboardMembership() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-semibold">Cohorts</h3>
             {!isSubscribed && (
-              <Link to="/course-buying-page" className="text-sm text-amber-400">Upgrade to unlock all</Link>
+              <Link to="/pricing-page" className="text-sm text-amber-400">Upgrade to unlock all</Link>
             )}
           </div>
 
@@ -346,10 +424,10 @@ export default function DashboardMembership() {
                       </div>
 
                       <div className="text-right">
-                        {isCohortVariantEnrolled(v.id) ? (
+                        {isCohortVariantUnlocked(v.id) ? (
                           <div className="text-emerald-300 text-sm">unlocked</div>
                         ) : (
-                          <Link to="/course-buying-page" className="text-sm text-amber-400">Enroll</Link>
+                          <Link to="/pricing-page" className="text-sm text-amber-400">Enroll</Link>
                         )}
                       </div>
                     </div>
@@ -357,7 +435,7 @@ export default function DashboardMembership() {
                 </div>
 
                 <div className="mt-3 flex items-center justify-between">
-                  <Link to={`/cohorts/${cohort.id}`} className="text-sm text-slate-300">View cohort</Link>
+                  <Link to='/learning-dashboard' className="text-sm text-slate-300">View More</Link>
                 </div>
               </article>
             ))}
@@ -374,7 +452,7 @@ export default function DashboardMembership() {
           </div>
         )}
         <div className="flex gap-3">
-          {!isSubscribed && <Link to="/course-buying-page" className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-400 font-medium">Get membership</Link>}
+          {!isSubscribed && <Link to="/pricing-page" className="px-4 py-2 rounded-md bg-amber-500 hover:bg-amber-400 font-medium">Get membership</Link>}
           <Link to="/" className="px-4 py-2 rounded-md border border-white/10">Back to home</Link>
         </div>
       </div>

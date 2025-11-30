@@ -1,4 +1,5 @@
 import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
+import { Toaster } from 'react-hot-toast';
 import {
   AdminHeader,
   CheckAuth,
@@ -22,9 +23,11 @@ import {
   PageNotFound,
   Profile,
   Signin,
-  CourseBuyingPage,
+  PricingPage,
   PaymentSuccess,
   PaymentFailed,
+  PrivacyPolicyPage,
+  ContactUs
 } from "./pages";
 
 function App() {
@@ -39,6 +42,7 @@ function App() {
     return (
       <Router>
         {currentUser?.role === "admin" ? <AdminHeader /> : <Header />}
+        <Toaster position="top-right" reverseOrder={false} />
         <Routes>
           <Route path="*" element={<PageNotFound />} />
 
@@ -112,7 +116,7 @@ function App() {
               </CheckAuth>
             }
           />
-          <Route path="/course-buying-page" element={<CourseBuyingPage />} />
+          <Route path="/pricing-page" element={<PricingPage />} />
           <Route
             path="/profile/:userID"
             element={
@@ -135,6 +139,22 @@ function App() {
             element={
               <CheckAuth isAuthenticated={isAuthenticated} user={currentUser}>
                 <PaymentFailed />
+              </CheckAuth>
+            }
+          />
+          <Route
+            path="/privacy-policy"
+            element={
+              <CheckAuth isAuthenticated={isAuthenticated} user={currentUser}>
+                <PrivacyPolicyPage />
+              </CheckAuth>
+            }
+          />
+          <Route
+            path="/contact-us"
+            element={
+              <CheckAuth isAuthenticated={isAuthenticated} user={currentUser}>
+                <ContactUs />
               </CheckAuth>
             }
           />

@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar";
 import HeroSection from "./HeroSection";
 import HeroSection2 from "./HeroSection2";
 import About from "./About";
+import BioSection from "./BioSection";
 import Summary from "./Summary";
 import Testimonials from "./Testimonials";
 
@@ -38,6 +39,7 @@ export {
   HeroSection,
   HeroSection2,
   About,
+  BioSection,
   Summary,
   LaunchTimer,
   PricingCard,

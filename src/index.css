@@ -131,3 +131,25 @@
 .fade_pulse_animation {
   animation: fade-pulse 2s ease-in-out infinite alternate;
 }
+
+/* Base toast style */
+.react-hot-toast {
+  background-color: #0b1220; /* dark background matching dashboard */
+  color: #f1f5f9;           /* light text */
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Success toast */
+.react-hot-toast.success {
+  color: #10b981; /* emerald green */
+  border: 1px solid #10b981;
+}
+
+/* Error toast */
+.react-hot-toast.error {
+  color: #f87171; /* red */
+  border: 1px solid #f87171;
+}

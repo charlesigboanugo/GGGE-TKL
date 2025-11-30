@@ -18,6 +18,41 @@ import {
 import { Link, useParams } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/supabase_client";
+import { marked } from "marked";
+
+type NoteType = {
+  type: "heading" | "paragraph" | "list";
+  level?: number;
+  text?: string;
+  items?: string[];
+};
+
+const parseMarkdownToNotes = (markdown: string): NoteType[] => {
+  const notes: NoteType[] = [];
+  const lexer = marked.lexer(markdown);
+
+  lexer.forEach((token: any) => {
+    if (token.type === "heading") {
+      notes.push({
+        type: "heading",
+        level: token.depth,
+        text: token.text,
+      });
+    } else if (token.type === "paragraph") {
+      notes.push({
+        type: "paragraph",
+        text: token.text,
+      });
+    } else if (token.type === "list") {
+        notes.push({
+          type: "list",
+          items: token.items.map((i: any) => i.text),
+        });
+      }
+  });
+
+  return notes;
+};
 
 // Updated ModuleType to support nested structure
 type ModuleType = {
@@ -173,6 +208,57 @@ const ModuleItem = ({
   );
 };
 
+// Helper to render heading/paragraph/list notes
+const NotesRenderer = ({ notes }: { notes: any[] }) => {
+  return (
+    <div className="space-y-8"> {/* overall spacing between notes */}
+      {notes.map((note, index) => {
+        switch (note.type) {
+            case "heading":
+              if (note.level === 1) {
+                return (
+                  <h2 key={index} className="text-3xl font-bold text-white mb-6">
+                    {note.text}
+                  </h2>
+                );
+              } else if (note.level === 2) {
+                return (
+                  <h3 key={index} className="text-2xl font-semibold text-white mb-4">
+                    {note.text}
+                  </h3>
+                );
+              } else if (note.level === 3) {
+                return (
+                  <h4 key={index} className="text-xl font-semibold text-white mb-3">
+                    {note.text}
+                  </h4>
+                );
+              }
+              return null;
+            case "paragraph":
+              return (
+                <p
+                  key={index}
+                  className="text-gray-300 text-lg leading-relaxed mb-6"
+                  dangerouslySetInnerHTML={{ __html: marked.parseInline(note.text || "") }}
+                />
+              );
+            case "list":
+              return (
+                <ul key={index} className="list-disc list-inside text-gray-300 text-lg space-y-2 mb-6">
+                  {note.items?.map((item, i) => (
+                    <li key={i} dangerouslySetInnerHTML={{ __html: marked.parseInline(item) }} />
+                  ))}
+                </ul>
+              );
+            default:
+              return null;
+          }
+      })}
+    </div>
+  );
+};
+
 export default function CourseContent() {
   const { courseID, course_variant, moduleID } = useParams();
   const { currentUser } = useUser();
@@ -210,12 +296,12 @@ export default function CourseContent() {
         .select("status")
         .eq("user_id", userId)
         .maybeSingle();
-      
+
       if (subError) {
         console.error("Subscription fetch error:", subError);
         setIsSubscribed(false);
       } else {
-        setIsSubscribed(subData?.status === "active");
+        setIsSubscribed(subData?.status === "active" || subData?.status === "trialing"|| subData?.status === "past_due" || subData?.status === "unpaid");
       }
 
       // 2. Fetch Course Content
@@ -230,12 +316,19 @@ export default function CourseContent() {
       if (contentError || !contentData) {
         setCourseContent(null);
         setError("Module content not found.");
-        console.error(contentError);
+        //console.error(contentError);
       } else {
-        setCourseContent(contentData);
+        const notes = contentData.markdown_content
+          ? parseMarkdownToNotes(contentData.markdown_content)
+          : [];
+
+        setCourseContent({
+        ...contentData,
+        notes,
+      });
       }
     } catch (e) {
-      console.error("Supabase fetch error:", e);
+    //  console.error("Supabase fetch error:", e);
       setError("Failed to fetch course data.");
     } finally {
       setIsLoading(false);
@@ -250,7 +343,7 @@ export default function CourseContent() {
     }
   }, [currentUser, courseID, course_variant, moduleID, fetchData]);
 
-  
+
   // Find the course and modules using the updated structure
   const course = courses.find((c) => c.id === courseID);
 
@@ -292,7 +385,7 @@ export default function CourseContent() {
         <div className="text-center">
           <p className="text-red-400 mb-4">{error}</p>
           <Link
-            to="/course-dashboard"
+            to="/learning-dashboard"
             className="text-blue-400 hover:text-blue-600"
           >
             Return to Dashboard
@@ -313,7 +406,7 @@ export default function CourseContent() {
             Please subscribe to access this content.
           </p>
           <Link
-            to="/course-buying-page"
+            to="/pricing-page"
             className="text-blue-400 hover:text-blue-600"
           >
             Subscribe Now
@@ -335,7 +428,7 @@ export default function CourseContent() {
             Available modules: {modules.length} found
           </p>
           <Link
-            to="/course-dashboard"
+            to="/learning-dashboard"
             className="text-blue-400 hover:text-blue-600"
           >
             Return to Dashboard
@@ -391,7 +484,7 @@ export default function CourseContent() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Link
-                to="/course-dashboard"
+                to="/learning-dashboard"
                 className="flex items-center gap-2 px-3 py-2 bg-[#373751] hover:bg-[#373751cd] transition-colors rounded-md"
               >
                 <ArrowLeft className="w-4 h-4" />
@@ -418,9 +511,17 @@ export default function CourseContent() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            <div className="bg-[#303045e1] rounded-2xl shadow-lg p-8 space-y-8">
+              {/* Module Title */}
+              <div className="space-y-2">
+                <h1 className="text-3xl font-extrabold text-white leading-snug">
+                  {currentModule.title}
+                </h1>
+              </div>
+            </div>
             {/* Video Player */}
+            {videoUrl && (
             <div className="relative bg-black aspect-video rounded-xl overflow-hidden">
-              {videoUrl ? (
                 <iframe
                   className="absolute inset-0 w-full h-full"
                   src={videoUrl}
@@ -430,49 +531,65 @@ export default function CourseContent() {
                   referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                 ></iframe>
-              ) : (
-                <div className="flex items-center justify-center w-full h-full text-gray-400">
-                  <p>No video available for this module.</p>
-                </div>
-              )}
             </div>
+            )}
 
             {/* Module Info */}
-            <div className="bg-[#303045e1] rounded-xl shadow-sm p-6">
-              <h2 className="text-2xl font-bold mb-3">{currentModule.title}</h2>
-              <p className="mb-6">{currentModule.description}</p>
+            <div className="bg-[#303045e1] rounded-2xl shadow-lg p-8 space-y-8">
+                {/* Module Title */}
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-extrabold text-white leading-snug">
+                    {currentModule.title}
+                  </h1>
+                  {currentModule.description && (
+                    <p className="text-gray-300 text-lg leading-relaxed">
+                      {currentModule.description}
+                    </p>
+                  )}
+                </div>
 
-              {/* Navigation */}
-              <div className="flex justify-between items-center pt-6">
-                {prevModule ? (
-                  <Link
-                    to={`/course-content/${courseID}/${course_variant}/${prevModule.id}`}
-                    className="flex items-center gap-2 px-4 py-2 hover:text-gray-200 transition-colors"
-                  >
-                    <ArrowLeft className="w-4 h-4" />
-                    {prevModule.title}
-                  </Link>
-                ) : (
-                  <div></div>
-                )}
-
-                {nextModule ? (
-                  <Link
-                    to={`/course-content/${courseID}/${course_variant}/${nextModule.id}`}
-                    className="flex items-center gap-2 px-4 py-2 hover:text-gray-200 transition-colors"
-                  >
-                    {nextModule.title}
-                    <ArrowLeft className="w-4 h-4 rotate-180" />
-                  </Link>
-                ) : (
-                  <div className="px-4 py-2 bg-green-200 text-green-700 rounded-lg font-medium">
-                    Course Complete!
+                {/* Notes Section */}
+                {courseContent?.notes && courseContent?.notes.length > 0 && (
+                  <div className="bg-[#252534] rounded-xl p-6 shadow-inner space-y-6">
+                    <h2 className="text-2xl font-semibold text-white border-b border-gray-600 pb-2 mb-4">
+                      Lesson Notes
+                    </h2>
+                    <NotesRenderer notes={courseContent.notes} />
                   </div>
                 )}
-              </div>
-            </div>
-          </div>
 
+                {/* Module Navigation */}
+                <div className="flex justify-between items-center mt-6">
+                  {/* Previous Module */}
+                  {prevModule ? (
+                    <Link
+                      to={`/course-content/${courseID}/${course_variant}/${prevModule.id}`}
+                      className="flex items-center gap-2 px-5 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all shadow-sm text-white font-medium"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                      <span className="truncate max-w-xs">{prevModule.title}</span>
+                    </Link>
+                  ) : (
+                    <div />
+                  )}
+
+                  {/* Next Module */}
+                  {nextModule ? (
+                    <Link
+                      to={`/course-content/${courseID}/${course_variant}/${nextModule.id}`}
+                      className="flex items-center gap-2 px-5 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-all shadow-sm text-white font-medium"
+                    >
+                      <span className="truncate max-w-xs">{nextModule.title}</span>
+                      <ArrowLeft className="w-4 h-4 rotate-180" />
+                    </Link>
+                  ) : (
+                    <div className="px-5 py-3 bg-green-500 text-white rounded-lg font-medium shadow-sm">
+                      Course Complete!
+                    </div>
+                  )}
+                </div>
+              </div>
+          </div>
           {/* Sidebar */}
           <div className="space-y-6">
             <Accordion

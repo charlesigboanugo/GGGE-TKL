@@ -23,6 +23,35 @@ if (!endpointSecret) throw new Error("Missing STRIPE_WEBHOOK_SECRET");
 if (!Deno.env.get("SUPABASE_URL") || !Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"))
   throw new Error("Missing Supabase URL or service role key");
 
+async function updateOrderStatus(orderId: string, status: string, session: any) {
+  try {
+    if (!orderId) {
+      console.warn("No orderId provided; cannot update order");
+      return;
+    }   
+    const { error } = await supabaseAdmin
+      .from("orders")
+      .update({
+        status,
+        stripe_checkout_session_id: session.id,
+        payment_intent_id: session.payment_intent || null,
+        paid_at: status === "completed" ? new Date().toISOString() : null,
+        failed_at: status === "failed" ? new Date().toISOString() : null,
+        expired_at: status === "expired" ? new Date().toISOString() : null,
+      })
+      .eq("id", orderId);
+
+    if (error){
+      throw new Error("Failed to update order status");
+    } else {
+      console.log(`Order ${orderId} marked as ${status}`);
+    }
+  } catch (err) {
+    console.error("Error updating order status:", err);
+    throw err;
+  }
+}
+
 async function upsertSubscription(
   userId,
   email,
@@ -31,6 +60,13 @@ async function upsertSubscription(
   subscription,
   metadata
 ) {
+  const extraData: Record<string, any> = {};
+  if (subscription.current_period_start)
+    extraData.current_period_start = new Date(subscription.current_period_start * 1000).toISOString();
+  if (subscription.current_period_end)
+    extraData.current_period_end = new Date(subscription.current_period_end * 1000).toISOString();
+  
+  console.log(extraData);
   try {
     const { error: upsertError } = await supabaseAdmin
       .from("user_subscriptions")
@@ -42,12 +78,8 @@ async function upsertSubscription(
           stripe_subscription_id: subscriptionId,
           status: subscription.status,
           metadata: metadata || {},
-          current_period_start: new Date(
-            subscription.current_period_start * 1000
-          ).toISOString(),
-          current_period_end: new Date(
-            subscription.current_period_end * 1000
-          ).toISOString(),
+          ...extraData,
+          cancel_at_period_end: subscription.cancel_at_period_end ?? false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
@@ -132,6 +164,7 @@ async function handleWebhook(req: Request) {
     const subscriptionId = session.subscription;
     const customerId = session.customer;
     const paymentType = session.metadata?.paymentType;
+    const orderId = session.metadata?.orderId;
 
     if (!userId || !email || !paymentType) {
       console.error(
@@ -151,51 +184,144 @@ async function handleWebhook(req: Request) {
     }
 
     if (paymentType === "one_time") {
-      const cartItems = JSON.parse(session.metadata?.cartItems || "[]");
-      const transactionId = session.id;
-      const totalPrice = parseFloat(session.metadata?.totalPrice || "0");
       const currency = session.metadata?.currency || "gbp";
+      const transactionId = session.id;
+      const { data: lineItems } = await stripe.checkout.sessions.listLineItems(
+        session.id,
+        { expand: ["data.price.product"] }
+      );
+      
+      const courseIds = [];
+      const cohortIds = [];
+      const courseVariantIds = [];
+      const cohortVariantIds = [];
 
-      if (!Array.isArray(cartItems) || cartItems.length === 0) {
-        console.error("No valid cartItems in metadata");
-        return new Response(JSON.stringify({ error: "No cart items" }), {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        });
-      }
+      let totalPrice = 0;
 
-      // Extract course_ids and variant_ids into separate arrays
-      const courseIds = cartItems.map((item) => item.courseId);
-      const variantIds = cartItems.map((item) => item.variantId);
+      for (const item of lineItems) {
+        const meta = item.price.product.metadata;
+        const type = meta.type; 
+        const parentId = meta.parentId;
+        const variantId = meta.variantId;
 
-      try {
-        const { error } = await supabaseAdmin.from("enrollments").insert({
-          user_id: userId,
-          email: email,
-          stripe_checkout_session_id: transactionId,
-          course_ids: courseIds,
-          variant_ids: variantIds,
-          total_price_paid: totalPrice,
-          currency: currency,
-          status: "completed",
-        });
+        totalPrice += item.amount_total ?? 0;
 
-        if (error) {
-          console.error(
-            `Error inserting enrollment for user ${userId}:`,
-            error
-          );
-        } else {
-          console.log(
-            `Inserted single enrollment record for user ${userId} with transaction ${transactionId}`
-          );
+        // individual inserts for new system
+        if (type === "course") {
+          courseIds.push(parentId);
+          courseVariantIds.push(variantId);
         }
-      } catch (err) {
+        else if (type === "cohort") {
+          cohortIds.push(parentId);
+          cohortVariantIds.push(variantId);
+        }
+
+      }
+      if (courseIds.length === 0 && cohortIds.length === 0) {
         console.error(
-          `Caught error during enrollment insertion for transaction ${transactionId}:`,
-          err
+          `No valid course or cohort items found in session line items: ${JSON.stringify(
+            lineItems,
+            null,
+            2
+          )}`
+        );
+        return new Response(
+          JSON.stringify({ error: "No valid course or cohort items found" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          }
         );
       }
+      if (courseIds.length > 0) {
+        try {
+          const { error } = await supabaseAdmin.from("enrollments").insert({
+            user_id: userId,
+            email: email,
+            stripe_checkout_session_id: transactionId,
+            course_ids: courseIds,
+            variant_ids: courseVariantIds,
+            total_price_paid: totalPrice,
+            currency: currency,
+            status: "completed",
+          });
+          if (error) {
+            console.error(
+              `Error inserting course enrollment for user ${userId}:`,
+              error
+            );
+          } else {
+            console.log(
+              `Inserted course enrollment record for user ${userId} with transaction ${transactionId}`
+            );
+          }
+        } catch (err) {
+          console.error(
+            `Caught error during course enrollment insertion for transaction ${transactionId}:`,
+            err
+          );
+        }
+      }
+      if (cohortIds.length > 0) {
+        try {
+          const { error } = await supabaseAdmin.from("cohort_enrollments").insert({
+            user_id: userId,  
+            email: email,
+            stripe_checkout_session_id: transactionId,
+            cohort_ids: cohortIds,
+            cohort_variant_ids: cohortVariantIds,
+            total_price_paid: totalPrice,
+            currency: currency,
+            status: "completed",
+          });
+          if (error) {
+            console.error(
+              `Error inserting cohort enrollment for user ${userId}:`,
+              error
+            );
+          } else {
+            console.log(
+              `Inserted cohort enrollment record for user ${userId} with transaction ${transactionId}`
+            );
+          }
+        } catch (err) {
+          console.error(
+            `Caught error during cohortenrollment insertion for transaction ${transactionId}:`,
+            err
+          );
+        }
+      }
+
+      // Only trigger emails by storing in queue table for one-time purchases
+      try {
+        if (session.mode === "payment") {
+          await supabaseAdmin.from("session_email_queue").insert({
+            user_id: userId,
+            email: email,
+            stripe_checkout_session_id: session.id,
+            total_price_paid: session.amount_total / 100,
+            currency: session.currency,
+            course_ids: courseIds,
+            cohort_ids: cohortIds,
+            course_variant_ids: courseVariantIds,
+            cohort_variant_ids: cohortVariantIds,
+            email_sent: false
+          });
+        }
+      }
+      catch (err) {
+        console.error("Error inserting into session_email_queue:", err);
+      }
+
+      try {
+        await updateOrderStatus(orderId, "completed", session);
+      } catch (error) {
+        console.error("Error updating order status:", error);
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        });
+    } 
     } else if (paymentType === "subscription" && subscriptionId) {
       try {
         const subscription = await stripe.subscriptions.retrieve(
@@ -235,7 +361,19 @@ async function handleWebhook(req: Request) {
       console.log(
         `No subscriptionId for one-time payment or invalid paymentType, skipping subscription upsert`
       );
+      return;
     }
+
+    try {
+      await updateOrderStatus(orderId, "completed", session);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
   } else if (
     event.type === "customer.subscription.updated" ||
     event.type === "customer.subscription.created"
@@ -419,6 +557,44 @@ async function handleWebhook(req: Request) {
         headers: { "Content-Type": "application/json" },
       });
     }
+  } else if (event.type === "payment_intent.payment_failed"){
+    const paymentIntent = event.data.object;
+    const orderId = paymentIntent.metadata?.orderId;
+
+    try {
+      await updateOrderStatus(orderId, "failed", paymentIntent);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+  } else if (event.type === "checkout.session.expired"){
+    const session = event.data.object;
+    const orderId = session.metadata?.orderId;
+
+    try {
+      await updateOrderStatus(orderId, "expired", session);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+  }
+  else if (event.type === "invoice.payment_failed") {
+    // Handle invoice payment failure if needed
+    console.log("Invoice payment failed event received");
+    const invoice = event.data.object;
+    const orderId = invoice.metadata?.orderId;
+    await updateOrderStatus(orderId, "failed", invoice);
+    
+  } else {
+    console.log(`Unhandled event type: ${event.type}`);
   }
 
   return new Response(JSON.stringify({ status: "success" }), {

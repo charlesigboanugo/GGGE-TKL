@@ -1,6 +1,6 @@
 // Purpose:
 // Send subscription activation/deactivation status emails
-// Add/remove the user's contact from BREVO_MEMBERS_LIST_ID and BREVO_STUDENT_LIST_ID explicitly
+// Add/remove the user's contact from BREVO_MEMBERS_LIST_ID
 // Trigger: 'user_subscriptions' table INSERT, UPDATE, & DELETE
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
@@ -8,27 +8,27 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.0";
 
 // Load environment variables
 const SUBSCRIPTION_ACTIVATION_EMAIL_TEMPLATE_ID = parseInt(
-  Deno.env.get("VITE_SUBSCRIPTION_ACTIVATION_EMAIL_TEMPLATE_ID") || "11"
+  Deno.env.get("VITE_SUBSCRIPTION_ACTIVATION_EMAIL_TEMPLATE_ID") || 2
 );
 const SUBSCRIPTION_CANCELED_EMAIL_TEMPLATE_ID = parseInt(
-  Deno.env.get("VITE_SUBSCRIPTION_CANCELED_EMAIL_TEMPLATE_ID") || "12"
+  Deno.env.get("VITE_SUBSCRIPTION_CANCELED_EMAIL_TEMPLATE_ID") || 3
 );
 const SUBSCRIPTION_PAYMENT_FAILED_EMAIL_TEMPLATE_ID = parseInt(
-  Deno.env.get("VITE_SUBSCRIPTION_PAYMENT_FAILED_EMAIL_TEMPLATE_ID") || "13"
+  Deno.env.get("VITE_SUBSCRIPTION_PAYMENT_FAILED_EMAIL_TEMPLATE_ID") || 4
 );
 const SENDER_EMAIL =
-  Deno.env.get("VITE_FROM_ADDRESS") || "hello@givegetgoeducation.co.uk";
-const SENDER_NAME = Deno.env.get("VITE_APP_NAME") || "GGGE Learning";
-const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
+  Deno.env.get("VITE_FROM_ADDRESS")
+const SENDER_NAME = Deno.env.get("VITE_APP_NAME")
+const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY")
 const BREVO_ALL_CONTACT_LIST_ID = parseInt(
-  Deno.env.get("VITE_BREVO_ALL_CONTACT_LIST_ID") || "2"
+  Deno.env.get("VITE_BREVO_ALL_CONTACT_LIST_ID") || 1
 );
 const BREVO_MEMBERS_LIST_ID = parseInt(
-  Deno.env.get("VITE_BREVO_MEMBERS_LIST_ID") || "3"
+  Deno.env.get("VITE_BREVO_MEMBERS_LIST_ID") || 2
 );
-const BREVO_STUDENT_LIST_ID = parseInt(
-  Deno.env.get("VITE_BREVO_STUDENT_LIST_ID") || "4"
-);
+
+console.log("BREVO KEY:",  BREVO_API_KEY);
+console.log("senders details", { email: SENDER_EMAIL, name: SENDER_NAME });
 
 // Validate env vars
 if (!BREVO_API_KEY)
@@ -37,8 +37,8 @@ if (!Deno.env.get("SUPABASE_URL") || !Deno.env.get("SUPABASE_SERVICE_ROLE_KEY"))
   throw new Error("Missing Supabase URL or service role key");
 
 const supabaseAdmin = createClient(
-  Deno.env.get("SUPABASE_URL") ?? "",
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+  Deno.env.get("SUPABASE_URL"),
+  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
 );
 
 async function sendBrevoTemplateEmail(
@@ -116,6 +116,59 @@ async function addToBrevoLists(
   listIds: number[]
 ) {
   try {
+    // Attempt to update the contact first
+    let res = await fetch(
+      `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
+      {
+        method: "PUT",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "api-key": BREVO_API_KEY,
+        },
+        body: JSON.stringify({
+          attributes,
+          listIds,
+          updateEnabled: true, // ensures update works
+        }),
+      }
+    );
+
+    // If contact does not exist, create it
+    if (res.status === 404) {
+      res = await fetch("https://api.brevo.com/v3/contacts", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "api-key": BREVO_API_KEY,
+        },
+        body: JSON.stringify({
+          email,
+          attributes,
+          listIds,
+        }),
+      });
+    }
+
+    if (!res.ok) {
+      const errData = await res.json();
+      console.error(`Failed to add ${email} to lists:`, res.status, errData);
+    } else {
+      console.log(`Added ${email} to lists: ${listIds}`);
+    }
+  } catch (e) {
+    console.error(`Error adding ${email} to lists:`, e);
+  }
+}
+
+// Add to Brevo lists (overwrites if needed)
+/*async function addToBrevoLists(
+  email: string,
+  attributes: any,
+  listIds: number[]
+) {
+  try {
     const res = await fetch(
       `https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}`,
       {
@@ -142,6 +195,7 @@ async function addToBrevoLists(
     console.error(`Error adding ${email} to lists:`, e);
   }
 }
+*/
 
 async function getEmailAndUsernameFromProfiles(userId: string) {
   const { data, error } = await supabaseAdmin
@@ -191,12 +245,12 @@ serve(async (req) => {
         { username, subscription_id: recordToUse.stripe_subscription_id }
       );
 
-      // Explicitly remove from members, add to students
+      // Explicitly remove from members, add to CONTACT LIST
       await removeFromBrevoList(BREVO_MEMBERS_LIST_ID, recipientEmail);
       await addToBrevoLists(
         recipientEmail,
         { IS_MEMBER: false, IS_STUDENT: true },
-        [BREVO_ALL_CONTACT_LIST_ID, BREVO_STUDENT_LIST_ID]
+        [BREVO_ALL_CONTACT_LIST_ID]
       );
 
       console.log(`Processed unsubscribe for ${recipientEmail}`);
@@ -221,8 +275,7 @@ serve(async (req) => {
           { username, subscription_id: recordToUse.stripe_subscription_id }
         );
 
-        // Remove from student, add to members
-        await removeFromBrevoList(BREVO_STUDENT_LIST_ID, recipientEmail);
+        // Remove from all CONTACT LIST, add to members
         await addToBrevoLists(
           recipientEmail,
           { IS_MEMBER: true, IS_STUDENT: false },
@@ -246,7 +299,7 @@ serve(async (req) => {
         await addToBrevoLists(
           recipientEmail,
           { IS_MEMBER: false, IS_STUDENT: true },
-          [BREVO_ALL_CONTACT_LIST_ID, BREVO_STUDENT_LIST_ID]
+          [BREVO_ALL_CONTACT_LIST_ID]
         );
 
         console.log(`Moved ${recipientEmail} to student list`);

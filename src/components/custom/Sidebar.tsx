@@ -154,12 +154,12 @@ export default function Sidebar({
 
         <ButtonGhost
           isLink={true}
-          to="/course-buying-page"
+          to="/pricing-page"
           text={
             <>
               <span className="font-bold text-lg">$</span>
               <span className="font-semibold flex items-center justify-start gap-2">
-                Courses
+                Pricing
               </span>
             </>
           }

@@ -6,13 +6,10 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 const BREVO_ALL_CONTACT_LIST_ID = parseInt(
-  Deno.env.get("BREVO_ALL_CONTACT_LIST_ID") || "2"
-);
-const BREVO_STUDENTS_LIST_ID = parseInt(
-  Deno.env.get("BREVO_STUDENTS_LIST_ID") || "4"
+  Deno.env.get("BREVO_ALL_CONTACT_LIST_ID") || "1"
 );
 const BREVO_MEMBERS_LIST_ID = parseInt(
-  Deno.env.get("BREVO_MEMBERS_LIST_ID") || "3"
+  Deno.env.get("BREVO_MEMBERS_LIST_ID") || "2"
 );
 
 // Add startup logging
@@ -20,7 +17,6 @@ console.log("[BREVO-CLEANUP] Function started");
 console.log("[BREVO-CLEANUP] Environment check:", {
   hasBrevoApiKey: !!BREVO_API_KEY,
   allListId: BREVO_ALL_CONTACT_LIST_ID,
-  studentsListId: BREVO_STUDENTS_LIST_ID,
   membersListId: BREVO_MEMBERS_LIST_ID,
 });
 
@@ -268,7 +264,6 @@ serve(async (req) => {
       // Remove from all relevant lists
       const removalPromises = [
         removeContactFromBrevoList(userEmail, BREVO_ALL_CONTACT_LIST_ID),
-        removeContactFromBrevoList(userEmail, BREVO_STUDENTS_LIST_ID),
         removeContactFromBrevoList(userEmail, BREVO_MEMBERS_LIST_ID),
       ];
 
@@ -281,7 +276,6 @@ serve(async (req) => {
       results.forEach((result, index) => {
         const listIds = [
           BREVO_ALL_CONTACT_LIST_ID,
-          BREVO_STUDENTS_LIST_ID,
           BREVO_MEMBERS_LIST_ID,
         ];
         if (result.status === "fulfilled") {

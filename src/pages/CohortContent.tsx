@@ -234,7 +234,7 @@ export default function CohortContent() {
         .select("*")
         .eq("user_id", userId)
         .contains("cohort_ids", [cohortID])
-        .contains("cohort_variant_ids", [cohort_variant]);
+        .or(`cohort_variant_ids.cs.{${cohort_variant}} , cohort_variant_ids.cs.{full_program}`);
 
       if (enrollmentError || !enrollmentData || enrollmentData.length === 0) {
         setIsEnrolled(false);
@@ -270,7 +270,7 @@ export default function CohortContent() {
         setHasMarkedAttendance(contentData.attendance_list?.includes(userId) || false);
       }
     } catch (e) {
-      console.error("Supabase fetch error:", e);
+     // console.error("Supabase fetch error:", e);
       setError("Failed to fetch cohort data.");
     } finally {
       setIsLoading(false);
@@ -444,7 +444,7 @@ export default function CohortContent() {
             Retry
           </button>
           <br />
-          <Link to="/cohort-dashboard" className="text-blue-400 hover:text-blue-600">
+          <Link to="/learning-dashboard" className="text-blue-400 hover:text-blue-600">
             Return to Dashboard
           </Link>
         </div>
@@ -460,7 +460,7 @@ export default function CohortContent() {
             Cohort: {cohortID}, Variant: {cohort_variant}, Session: {sessionID}
           </p>
           <p className="text-gray-500 mb-4 text-sm">Available sessions: {sessions.length} found</p>
-          <Link to="/cohort-dashboard" className="text-blue-400 hover:text-blue-600">
+          <Link to="/learning-dashboard" className="text-blue-400 hover:text-blue-600">
             Return to Dashboard
           </Link>
         </div>
@@ -473,7 +473,7 @@ export default function CohortContent() {
         <div>
           <h2 className="text-2xl font-bold mb-4">You are not enrolled in this cohort.</h2>
           <p className="text-gray-400 mb-4">Please enroll to access this content.</p>
-          <Link to="/cohort-dashboard" className="text-blue-400 hover:text-blue-600">
+          <Link to="/learning-dashboard" className="text-blue-400 hover:text-blue-600">
             Return to Dashboard
           </Link>
         </div>

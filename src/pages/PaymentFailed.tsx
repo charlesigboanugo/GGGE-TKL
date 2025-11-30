@@ -26,7 +26,7 @@ export default function PaymentFailed() {
           process. Please try again.
         </p>
         <Link
-          to="/course-buying-page"
+          to="/pricing-page"
           className="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out"
         >
           Try Again

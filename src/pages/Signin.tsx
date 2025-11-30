@@ -20,7 +20,7 @@ export default function Signin() {
     e.preventDefault();
     setLoading(true);
 
-    let { error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
       email: formdata.email,
       options: {
         emailRedirectTo: import.meta.env.VITE_PUBLIC_REDIRECT_URL,
@@ -31,7 +31,7 @@ export default function Signin() {
 
     if (error) {
       setMessage("* Something went wrong, please try again later.");
-      console.error(error);
+      //console.error(error);
     } else
       setMessage(
         "* A link has been sent to your email, proceed to verify. Check Spam"

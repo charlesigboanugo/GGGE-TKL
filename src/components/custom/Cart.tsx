@@ -79,7 +79,7 @@ export default function Cart({
   onRemoveItem,
   isCheckingOut,
 }: CartPropsType) {
-  const isGlobalEnrollmentOpen = launchPhase === "phase_1" || launchPhase === "phase_2";
+  const isEnrollmentOpen = launchPhase === "phase_1" || launchPhase === "phase_2";
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price, 0);
 
   // ---------- Phase Display ----------
@@ -137,9 +137,9 @@ export default function Cart({
         </div>
         <button
           onClick={onClearCart}
-          disabled={!isGlobalEnrollmentOpen || isCheckingOut}
+          disabled={!isEnrollmentOpen || isCheckingOut}
           className={`flex items-center gap-1 px-3 py-1 rounded-md text-sm font-medium transition-colors ${
-            isGlobalEnrollmentOpen && !isCheckingOut
+            isEnrollmentOpen && !isCheckingOut
               ? "text-red-600 hover:text-red-800 hover:bg-red-50"
               : "text-gray-400 cursor-not-allowed"
           }`}
@@ -171,7 +171,7 @@ export default function Cart({
                     onRemoveItem(item.type, item.courseId || item.cohortId, item.variantId)
                   }
                   className="text-xs text-red-600 hover:text-red-800"
-                  disabled={!isGlobalEnrollmentOpen || isCheckingOut}
+                  disabled={!isEnrollmentOpen || isCheckingOut}
                 >
                   Remove
                 </button>

@@ -10,20 +10,20 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.42.0";
 
 // Load environment variables
 const DAY2_EMAIL_TEMPLATE_ID = parseInt(
-  Deno.env.get("VITE_DAY2_EMAIL_TEMPLATE_ID") || "2"
+  Deno.env.get("VITE_DAY2_EMAIL_TEMPLATE_ID") || "5"
 );
 const DAY3_EMAIL_TEMPLATE_ID = parseInt(
-  Deno.env.get("VITE_DAY3_EMAIL_TEMPLATE_ID") || "3"
+  Deno.env.get("VITE_DAY3_EMAIL_TEMPLATE_ID") || "6"
 );
 const DAY4_EMAIL_TEMPLATE_ID = parseInt(
-  Deno.env.get("VITE_DAY4_EMAIL_TEMPLATE_ID") || "4"
+  Deno.env.get("VITE_DAY4_EMAIL_TEMPLATE_ID") || "7"
 );
 const DAY5_EMAIL_TEMPLATE_ID = parseInt(
-  Deno.env.get("VITE_DAY5_EMAIL_TEMPLATE_ID") || "5"
+  Deno.env.get("VITE_DAY5_EMAIL_TEMPLATE_ID") || "8"
 );
 const SENDER_EMAIL =
-  Deno.env.get("VITE_FROM_ADDRESS") || "hello@givegetgoeducation.co.uk";
-const SENDER_NAME = Deno.env.get("VITE_APP_NAME") || "GGGE Learning";
+  Deno.env.get("VITE_FROM_ADDRESS") || "";
+const SENDER_NAME = Deno.env.get("VITE_APP_NAME") || "TKOC Learning";
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 const REDIRECT_URL_BASE =
   Deno.env.get("VITE_PUBLIC_REDIRECT_URL") || "http://localhost:5173/";
@@ -169,7 +169,7 @@ async function runScheduledEmailJob() {
     const emailSentColumn = `day${dayOffset + 1}_email_sent_at`;
 
     // Fetch distinct user_ids from enrollments
-    const { data: enrollmentUsers, error: enrollmentError } =
+    const { data: courseEnrollmentUsers, error: enrollmentError } =
       await supabaseAdmin
         .from("enrollments")
         .select("user_id")
@@ -185,16 +185,39 @@ async function runScheduledEmailJob() {
       continue;
     }
 
-    // Deduplicate user_ids
-    const uniqueUserIds = [
-      ...new Set(enrollmentUsers?.map((e) => e.user_id) || []),
-    ];
-    console.log(
-      `Debug: Unique user_ids in enrollments: ${JSON.stringify(uniqueUserIds)}`
-    );
+    console.log("🔥 Course user_ids =", courseEnrollmentUsers?.map((e) => e.user_id) || []);
 
-    if (!uniqueUserIds.length) {
-      console.log(`No enrollments found for Day ${dayOffset + 1} email.`);
+    // -----------------------------------------------------------------------
+    // 🔥 NEW: FETCH USERS FROM *COHORT* ENROLLMENTS
+    // -----------------------------------------------------------------------
+    const { data: cohortEnrollmentUsers, error: cohortError } = await supabaseAdmin
+      .from("cohort_enrollments")
+      .select("user_id")
+      .eq("status", "completed")
+      .gte("created_at", queryIntervalStart.toISOString())
+      .lt("created_at", queryIntervalEnd.toISOString());
+
+    if (cohortError) {
+      console.error("Error fetching cohort_enrollments:", cohortError);
+      continue;
+    }
+
+    console.log("🔥 Cohort user_ids =", cohortEnrollmentUsers?.map((e) => e.user_id) || []);
+
+    // -----------------------------------------------------------------------
+    // 🔥 NEW: Combine both enrollments & deduplicate user IDs
+    // -----------------------------------------------------------------------
+    const combinedUserIds = [
+      ...(courseEnrollmentUsers?.map((e) => e.user_id) || []),
+      ...(cohortEnrollmentUsers?.map((e) => e.user_id) || []),
+    ];
+
+    const uniqueUserIds = [...new Set(combinedUserIds)];
+
+    console.log("🔥 Combined unique user_ids =", uniqueUserIds);
+
+    if (uniqueUserIds.length === 0) {
+      console.log("No users found for this time period");
       continue;
     }
 

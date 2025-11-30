@@ -15,6 +15,7 @@ import type {
   UserProviderPropsType,
 } from "@/constants/types";
 
+import { toast } from "react-hot-toast";
 // Context
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -32,11 +33,11 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
 
   // Fetch Profile - Stable function with useCallback
   const fetchUserProfile = useCallback(async (userId: string) => {
-    console.log("[UserContext] Fetching profile for user:", userId);
+    //console.log("[UserContext] Fetching profile for user:", userId);
 
     // Prevent concurrent fetches
     if (isFetchingProfile.current) {
-      console.log("[UserContext] Profile fetch already in progress, skipping");
+      //console.log("[UserContext] Profile fetch already in progress, skipping");
       return null;
     }
 
@@ -50,15 +51,17 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         .single();
 
       if (error || !data) {
-        console.error("[UserContext] Error fetching profile:", error);
+        //console.error("[UserContext] Error fetching profile:", error);
+        toast.error("An error occured in fetching your profile");
         return null;
       }
 
-      console.log("[UserContext] Profile fetched successfully:", data);
+      //console.log("[UserContext] Profile fetched successfully:", data);
       setCurrentUser(data);
       return data;
     } catch (err) {
-      console.error("[UserContext] Unexpected error fetching profile:", err);
+      toast.error("Failed to fetch user Profile");
+      //console.error("[UserContext] Unexpected error fetching profile:", err);
       return null;
     } finally {
       isFetchingProfile.current = false;
@@ -67,10 +70,10 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
 
   // Ensure Profile Exists - Stable function
   const ensureProfileExists = useCallback(async (user: SupabaseAuthUser) => {
-    console.log(
+   /* console.log(
       "[UserContext] Checking if profile exists for user:",
       user.email
-    );
+    );*/
 
     try {
       const { data: existing, error } = await supabase
@@ -80,14 +83,15 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         .maybeSingle();
 
       if (error) {
-        console.error("[UserContext] Error checking profile existence:", error);
+        //console.error("[UserContext] Error checking profile existence:", error);
+        toast("Profile error");
         return false;
       }
 
       if (!existing) {
-        console.log(
+        /*console.log(
           "[UserContext] Profile doesn't exist, creating fallback profile"
-        );
+        );*/
         const username = user.email?.split("@")[0] ?? "learner";
         const { error: insertError } = await supabase.from("profiles").insert({
           id: user.id,
@@ -98,23 +102,24 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         });
 
         if (insertError) {
-          console.error(
+        /* console.error(
             "[UserContext] Error creating fallback profile:",
             insertError
-          );
+          );*/
           return false;
         }
-        console.log("[UserContext] Fallback profile created for", username);
+        //console.log("[UserContext] Fallback profile created for", username);
       } else {
-        console.log("[UserContext] Profile already exists");
+        //console.log("[UserContext] Profile already exists");
       }
 
       return true;
     } catch (err) {
-      console.error(
+    /*  console.error(
         "[UserContext] Unexpected error in ensureProfileExists:",
         err
-      );
+      );*/
+      toast.error("An unexpected error occured");
       return false;
     }
   }, []);
@@ -123,11 +128,11 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
   const updateUserProfile = useCallback(
     async (data: Partial<UserProfileType>) => {
       if (!supabaseAuthUser?.id) {
-        console.log("[UserContext] No authenticated user for profile update");
+        //console.log("[UserContext] No authenticated user for profile update");
         return false;
       }
 
-      console.log("[UserContext] Updating profile with data:", data);
+      //console.log("[UserContext] Updating profile with data:", data);
 
       try {
         // Use upsert to gracefully handle both new and existing profiles.
@@ -143,17 +148,18 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         );
 
         if (error) {
-          console.error("[UserContext] Error updating profile:", error);
+          //console.error("[UserContext] Error updating profile:", error);
           return false;
         }
 
-        console.log(
+        /* console.log(
           "[UserContext] Profile updated successfully, refetching..."
-        );
+        );*/
         await fetchUserProfile(supabaseAuthUser.id);
         return true;
       } catch (err) {
-        console.error("[UserContext] Unexpected error updating profile:", err);
+        //console.error("[UserContext] Unexpected error updating profile:", err);
+        toast.error("Failed to upadte user profile");
         return false;
       }
     },
@@ -164,14 +170,14 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
   const uploadUserAvatar = useCallback(
     async (file: File) => {
       if (!supabaseAuthUser?.id) {
-        console.log("[UserContext] No authenticated user for avatar upload");
+        //console.log("[UserContext] No authenticated user for avatar upload");
         return null;
       }
 
-      console.log(
+      /*console.log(
         "[UserContext] Uploading avatar for user:",
         supabaseAuthUser.email
-      );
+      );*/
 
       try {
         const fileExtension = file.name.split(".").pop();
@@ -182,7 +188,7 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
           .upload(filePath, file, { upsert: true });
 
         if (uploadError) {
-          console.error("[UserContext] Avatar upload failed:", uploadError);
+         // console.error("[UserContext] Avatar upload failed:", uploadError);
           return null;
         }
 
@@ -192,14 +198,14 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         const publicUrl = data?.publicUrl;
 
         if (!publicUrl) {
-          console.error("[UserContext] Failed to get avatar public URL");
+          //console.error("[UserContext] Failed to get avatar public URL");
           return null;
         }
 
         const success = await updateUserProfile({ avatar: publicUrl });
         return success ? publicUrl : null;
       } catch (err) {
-        console.error("[UserContext] Unexpected error uploading avatar:", err);
+        //console.error("[UserContext] Unexpected error uploading avatar:", err);
         return null;
       }
     },
@@ -210,9 +216,9 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
   const deleteUserProfile = useCallback(async () => {
     // Ensure a user is authenticated before attempting deletion
     if (!supabaseAuthUser?.id) {
-      console.log(
+      /*console.log(
         "[UserContext] No authenticated user for account deletion request."
-      );
+      );*/
       return false;
     }
 
@@ -222,14 +228,14 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         "Are you sure you want to delete your account? This action cannot be undone."
       )
     ) {
-      console.log("[UserContext] Account deletion cancelled by user.");
+      //console.log("[UserContext] Account deletion cancelled by user.");
       return false;
     }
 
-    console.log(
+    /*console.log(
       "[UserContext] Initiating account deletion for user:",
       supabaseAuthUser.email
-    );
+    );*/
 
     try {
       // Get the current session to ensure we have a valid token
@@ -237,12 +243,12 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         await supabase.auth.getSession();
 
       if (sessionError || !session?.session) {
-        console.error("[UserContext] No valid session found:", sessionError);
-        alert("Authentication session expired. Please log in again.");
+        //console.error("[UserContext] No valid session found:", sessionError);
+        toast.error("Authentication session expired. Please log in again.");
         return false;
       }
 
-      console.log("[UserContext] Session validated, calling edge function...");
+      //console.log("[UserContext] Session validated, calling edge function...");
 
       // Call the 'delete-user-handler' Edge Function
       const { data, error } = await supabase.functions.invoke(
@@ -260,7 +266,7 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
 
       // Enhanced error logging
       if (error) {
-        console.error(
+       /* console.error(
           "[UserContext] Error calling delete-user-handler Edge Function:",
           {
             error,
@@ -269,7 +275,7 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
             details: error.details,
             status: error.status,
           }
-        );
+        );*/
 
         // More user-friendly error messages
         let userMessage = "Failed to delete account.";
@@ -283,19 +289,19 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
           userMessage = `Error: ${error.message}`;
         }
 
-        alert(userMessage);
+        toast.error(userMessage);
         return false;
       }
 
-      console.log("[UserContext] Edge function response:", data);
+     // console.log("[UserContext] Edge function response:", data);
 
       // Check if the response indicates success
       if (data?.message || data?.userId) {
-        console.log(
+       /* console.log(
           "[UserContext] Account deletion request sent successfully:",
           data
-        );
-        alert(
+        );*/
+        toast.success(
           "Your account has been successfully deleted. You will be logged out."
         );
 
@@ -313,18 +319,18 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         return true;
       } else {
         console.error("[UserContext] Unexpected response format:", data);
-        alert("Unexpected response from server. Please try again.");
+        toast.error("Unexpected response from server. Please try again.");
         return false;
       }
     } catch (err) {
-      console.error(
+      /*console.error(
         "[UserContext] Unexpected error during account deletion process:",
         {
           error: err,
           message: err.message,
           stack: err.stack,
         }
-      );
+      );*/
 
       let userMessage = "An unexpected error occurred during account deletion.";
       if (err.message?.includes("network") || err.message?.includes("fetch")) {
@@ -332,28 +338,28 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
           "Network error: Please check your connection and try again.";
       }
 
-      alert(userMessage);
+      toast.error(userMessage);
       return false;
     }
   }, [supabaseAuthUser?.id, supabaseAuthUser?.email]);
 
   // Sign Out - Stable function
   const signOut = useCallback(async () => {
-    console.log("[UserContext] Signing out user");
+    //console.log("[UserContext] Signing out user");
     setLoadingUser(true);
 
     try {
       const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error("[UserContext] Sign out error:", error);
+        //console.error("[UserContext] Sign out error:", error);
       } else {
-        console.log("[UserContext] Signed out successfully");
+        //console.log("[UserContext] Signed out successfully");
         setSupabaseAuthUser(null);
         setCurrentUser(null);
         setIsAuthenticated(false);
       }
     } catch (err) {
-      console.error("[UserContext] Unexpected error during sign out:", err);
+      //console.error("[UserContext] Unexpected error during sign out:", err);
     } finally {
       setLoadingUser(false);
     }
@@ -361,7 +367,7 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
 
   // Effect 1: Initialize Auth Session and Set Up Listener
   useEffect(() => {
-    console.log("[UserContext] Setting up auth session and listener");
+    //console.log("[UserContext] Setting up auth session and listener");
     setLoadingUser(true);
 
     async function initializeAuth() {
@@ -372,25 +378,25 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         } = await supabase.auth.getSession();
 
         if (error) {
-          console.error("[UserContext] Session fetch error:", error);
+         // console.error("[UserContext] Session fetch error:", error);
           setLoadingUser(false);
           return;
         }
 
         const user = session?.user;
         if (user) {
-          console.log("[UserContext] Authenticated user found:", user.email);
+          //console.log("[UserContext] Authenticated user found:", user.email);
           setSupabaseAuthUser(user);
           setIsAuthenticated(true);
         } else {
-          console.log("[UserContext] No user session found");
+         // console.log("[UserContext] No user session found");
           setSupabaseAuthUser(null);
           setCurrentUser(null);
           setIsAuthenticated(false);
           setLoadingUser(false);
         }
       } catch (err) {
-        console.error("[UserContext] Unexpected error initializing auth:", err);
+        //console.error("[UserContext] Unexpected error initializing auth:", err);
         setLoadingUser(false);
       }
     }
@@ -400,18 +406,18 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
     // Set up auth state change listener
     const { data: listener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log(`[UserContext] Auth event: ${event}`);
+        //console.log(`[UserContext] Auth event: ${event}`);
         const user = session?.user;
 
         if (user) {
-          console.log(
+          /*console.log(
             "[UserContext] Auth state changed - user signed in:",
             user.email
-          );
+          );*/
           setSupabaseAuthUser(user);
           setIsAuthenticated(true);
         } else {
-          console.log("[UserContext] Auth state changed - user signed out");
+          //console.log("[UserContext] Auth state changed - user signed out");
           setSupabaseAuthUser(null);
           setCurrentUser(null);
           setIsAuthenticated(false);
@@ -421,7 +427,7 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
     );
 
     return () => {
-      console.log("[UserContext] Cleaning up auth listener");
+      //console.log("[UserContext] Cleaning up auth listener");
       listener.subscription.unsubscribe();
     };
   }, []); // Empty dependency array - this should only run once
@@ -434,30 +440,30 @@ export const UserProvider: React.FC<UserProviderPropsType> = ({ children }) => {
         return;
       }
 
-      console.log(
+      /*console.log(
         "[UserContext] Auth user exists but no profile, fetching profile..."
-      );
+      );*/
 
       try {
         const profile = await fetchUserProfile(supabaseAuthUser.id);
 
         if (!profile) {
-          console.log(
+          /* console.log(
             "[UserContext] No profile found, ensuring profile exists..."
-          );
+          ); */
           const created = await ensureProfileExists(supabaseAuthUser);
 
           if (created) {
-            console.log(
+           /* console.log(
               "[UserContext] Profile created/verified, fetching again..."
-            );
+            );*/
             await fetchUserProfile(supabaseAuthUser.id);
           } else {
-            console.error("[UserContext] Failed to create/verify profile");
+           // console.error("[UserContext] Failed to create/verify profile");
           }
         }
       } catch (err) {
-        console.error("[UserContext] Error in profile sync:", err);
+         //console.error("[UserContext] Error in profile sync:", err);
       } finally {
         setLoadingUser(false);
       }

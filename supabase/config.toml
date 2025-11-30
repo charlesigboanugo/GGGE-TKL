@@ -2,7 +2,7 @@
 # https://supabase.com/docs/guides/local-development/cli/config
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
-project_id = "client"
+project_id = ""
 
 [api]
 enabled = true
@@ -181,11 +181,11 @@ otp_expiry = 3600
 [auth.email.smtp]
 enabled = true
 host = "smtp-relay.brevo.com"
-port = 587
-user = "856aef001@smtp-brevo.com"
-pass = "jM0g57D4CqWpcxsd"
-admin_email = "hello@givegetgoeducation.co.uk"
-sender_name = "GGGE"
+port = 586
+user = "test@gmail.com"
+pass = "env(BREVO_MASTER_PASS)"
+admin_email = "test@website.com"
+sender_name = "TestName"
 # smtp_ssl_mode = "starttls" # This line was causing the error and has been removed.
 
 # Uncomment to customize email template
@@ -339,13 +339,13 @@ entrypoint = "./functions/create-stripe-checkout-session/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/create-stripe-checkout-session/*.html" ]
 
-[functions.send-transactional-email]
-enabled = true
-verify_jwt = true
-import_map = "./functions/send-transactional-email/deno.json"
+#[functions.send-transactional-email]
+#enabled = true
+#verify_jwt = true
+#import_map = "./functions/send-transactional-email/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/send-transactional-email/index.ts"
+#entrypoint = "./functions/send-transactional-email/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/send-transactional-email/*.html" ]
@@ -374,7 +374,7 @@ entrypoint = "./functions/send-phase-emails/index.ts"
 
 [functions.stripe-webhook]
 enabled = true
-verify_jwt = true
+verify_jwt = false
 import_map = "./functions/stripe-webhook/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
@@ -394,13 +394,13 @@ entrypoint = "./functions/profiles-webhook-handler/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/profiles-webhook-handler/*.html" ]
 
-[functions.enrollments-webhook-handler]
+[functions.session_email_queue_listener]
 enabled = true
 verify_jwt = true
-import_map = "./functions/enrollments-webhook-handler/deno.json"
+import_map = "./functions/session_email_queue_listener/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/enrollments-webhook-handler/index.ts"
+entrypoint = "./functions/session_email_queue_listener/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/enrollments-webhook-handler/*.html" ]
@@ -449,13 +449,35 @@ entrypoint = "./functions/debugging-deletion/index.ts"
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/debugging-deletion/*.html" ]
 
-[functions.cancel-subscription]
+[functions.toggle-subscription]
 enabled = true
 verify_jwt = true
-import_map = "./functions/cancel-subscription/deno.json"
+import_map = "./functions/toggle-subscription/deno.json"
 # Uncomment to specify a custom file path to the entrypoint.
 # Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/cancel-subscription/index.ts"
+entrypoint = "./functions/toggle-subscription/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/cancel-subscription/*.html" ]
+
+[functions.contact-us]
+enabled = true
+verify_jwt = false
+import_map = "./functions/contact-us/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/contact-us/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/my-test-func/*.html" ]
+
+[functions.create-billing-portal]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-billing-portal/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/create-billing-portal/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/my-test-func/*.html" ]

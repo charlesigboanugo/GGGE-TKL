@@ -1,7 +1,22 @@
 import type { CourseType, ModuleType } from "./types";
 import type { CohortType, SessionType } from "./types";
 
-const tonyBio: string[] = [""];
+export type TonyBio = {
+  name: string;
+  photo: string;
+  paragraphs: string[];
+};
+
+const tonyBio: TonyBio = {
+  name: "Tony Klinger",
+  photo: "/assets/tony.jpeg",
+  paragraphs: [
+    "Tony Klinger is an award-winning producer, director, and educator with decades of experience in the international film industry.",
+    "He has worked with major studios and creative teams across the world and has authored several acclaimed books on filmmaking and career development.",
+    "His teaching approach blends real-world knowledge with inspiring storytelling that helps creative people achieve their professional goals.",
+    "Through this program, Tony empowers students to break into the industry and thrive in competitive creative environments."
+  ],
+};
 
 const helenBio: string[] = [""];
 
@@ -88,56 +103,6 @@ const testimonials: {
 
 const courses: CourseType[] = [
   {
-    id: "Film",
-    name: "Film Production",
-    description: "Master the art of filmmaking from script to screen",
-    color: "bg-blue-500",
-    status: "active",
-    variants: [
-      {
-        id: "basic",
-        name: "Basic",
-        description: "Introduction to filmmaking fundamentals",
-        duration: "4 weeks",
-        features: [
-          "Basic camera techniques",
-          "Story development",
-          "Post-production basics",
-          "Certificate of completion",
-        ],
-      },
-      {
-        id: "intermediate",
-        name: "Intermediate",
-        description: "Advanced production techniques and workflow",
-        duration: "8 weeks",
-        popular: true,
-        features: [
-          "Advanced cinematography",
-          "Professional editing",
-          "Sound design",
-          "Color grading",
-          "Industry mentorship",
-          "Portfolio review",
-        ],
-      },
-      {
-        id: "advanced",
-        name: "Advanced",
-        description: "Professional filmmaker mastery program",
-        duration: "12 weeks",
-        features: [
-          "Complete production pipeline",
-          "Advanced VFX",
-          "Distribution strategies",
-          "Industry connections",
-          "Equipment access",
-          "Final film screening",
-        ],
-      },
-    ],
-  },
-  {
     id: "movie",
     name: "Movie Production",
     description: "Master the art of filmmaking from script to screen",
@@ -147,1580 +112,242 @@ const courses: CourseType[] = [
       {
         id: "basic",
         name: "Basic",
-        description: "Introduction to filmmaking fundamentals",
+        description: "The Basics of Movie Production",
         duration: "4 weeks",
         features: [
           "Basic camera techniques",
-          "Story development",
-          "Post-production basics",
-          "Certificate of completion",
         ],
       },
       {
-        id: "intermediate",
-        name: "Intermediate",
-        description: "Advanced production techniques and workflow",
+        id: "advanced",
+        name: "Advanced",
+        description: "Part 2: How To Get Your Movie Made!",
         duration: "8 weeks",
         popular: true,
         features: [
           "Advanced cinematography",
-          "Professional editing",
-          "Sound design",
-          "Color grading",
-          "Industry mentorship",
-          "Portfolio review",
         ],
-      },
-      {
-        id: "advanced",
-        name: "Advanced",
-        description: "Professional filmmaker mastery program",
-        duration: "12 weeks",
-        features: [
-          "Complete production pipeline",
-          "Advanced VFX",
-          "Distribution strategies",
-          "Industry connections",
-          "Equipment access",
-          "Final film screening",
-        ],
-      },
+      }
     ],
-  },
-  {
-    id: "theatre",
-    name: "Theatre Arts",
-    description: "Develop your stage presence and acting skills",
-    color: "bg-purple-500",
-    status: "inactive",
-    variants: [
-      {
-        id: "basic",
-        name: "Basic",
-        description: "Foundation of acting and stage performance",
-        duration: "6 weeks",
-        features: [
-          "Acting fundamentals",
-          "Voice projection",
-          "Stage movement",
-          "Character development",
-        ],
-      },
-      {
-        id: "intermediate",
-        name: "Intermediate",
-        description: "Advanced acting techniques and method acting",
-        duration: "10 weeks",
-        popular: true,
-        features: [
-          "Method acting",
-          "Script analysis",
-          "Improvisation",
-          "Stage combat",
-          "Makeup basics",
-          "Live performance",
-        ],
-      },
-      {
-        id: "advanced",
-        name: "Advanced",
-        description: "Professional theatre training program",
-        duration: "14 weeks",
-        features: [
-          "Professional coaching",
-          "Industry auditions",
-          "Agent connections",
-          "Headshot session",
-          "Reel creation",
-          "Theatre showcase",
-        ],
-      },
-    ],
-  },
-  {
-    id: "event_management",
-    name: "Event Management",
-    description:
-      "Master event coordination for film, acting, and directing careers.",
-    color: "bg-green-800",
-    status: "active",
-    variants: [
-      {
-        id: "basic",
-        name: "Basic",
-        description:
-          "Foundations for film screenings, cast/crew gatherings, and small premieres.",
-        duration: "6 weeks",
-        features: [
-          "Event concept & budgeting",
-          "Venue & logistics",
-          "Basic scheduling",
-          "Vendor basics",
-          "Guest list & invites",
-          "On-site coordination",
-        ],
-      },
-      {
-        id: "intermediate",
-        name: "Intermediate",
-        description:
-          "Advanced management for film festivals, industry showcases, and networking.",
-        duration: "10 weeks",
-        popular: true,
-        features: [
-          "Event marketing & promotion",
-          "Sponsorship acquisition",
-          "Talent liaison",
-          "Technical production (AV, sound)",
-          "Crisis management",
-          "Post-event analysis",
-        ],
-      },
-      {
-        id: "advanced",
-        name: "Advanced",
-        description:
-          "Mastering major film premieres, awards, and bespoke artist launch events.",
-        duration: "14 weeks",
-        features: [
-          "Complex multi-venue planning",
-          "International coordination",
-          "High-profile talent management",
-          "Advanced budget oversight",
-          "Media relations & press junkets",
-          "Personal brand launch events",
-        ],
-      },
-    ],
-  },
+  }
 ];
-
 // Course modules data
 const courseModules: Record<string, Record<string, ModuleType[]>> = {
   movie: {
     movie_basic: [
       {
-        id: "education_learning",
-        title: "Education & Learning",
-        description:
-          "Gain essential knowledge and skills for a career in filmmaking",
-        duration: "45 min",
+        id: 'movie_basic_welcome_video',
+        title: 'Welcome Video',
+        description: 'Welcome to Tony Klinger Coaching Online. Watch this short welcome video.'
       },
       {
-        id: "networking",
-        title: "Networking",
-        description:
-          "Build connections within the film industry to boost your career",
-        duration: "60 min",
+        id: 'movie_basic_course_intro',
+        title: 'Course Introduction',
+        description: 'In this online course, you will learn essential steps to break into the movie business, including how to build a strong portfolio, network effectively within the industry, gain hands-on experience, and persist in a competitive field through ongoing education and specialization.'
       },
       {
-        id: "create_portfolio",
-        title: "Create a Portfolio",
-        description:
-          "Develop a strong portfolio to showcase your filmmaking skills",
-        duration: "50 min",
+        id: 'movie_basic_lesson1_education_training',
+        title: 'Lesson 1: Education and Training',
+        description: 'In this lesson, you will explore leading film schools such as USC, NYU, and NFTS, renowned for their comprehensive programs in film production and theory. Whether pursuing formal education or alternative paths, the focus remains on cultivating skills, creativity, and industry connections vital for success in the competitive movie industry.'
       },
       {
-        id: "start_small",
-        title: "Start Small",
-        description:
-          "Begin with small film projects to gain experience and confidence",
-        duration: "75 min",
+        id: 'movie_basic_lesson2_networking',
+        title: 'Lesson 2: Networking',
+        description: 'In this lesson, you will learn key networking strategies for the movie industry, how to go about focusing on education, how to develope your skills, building your online presence, event attendance, finding mentorship, learning collaboration, finding internships, and persistence. These are critical for newcomers seeking to build connections and advance in filmmaking.'
       },
       {
-        id: "internships",
-        title: "Internships",
-        description:
-          "Explore internship opportunities to kickstart your film career",
-        duration: "40 min",
+        id: 'movie_basic_lesson3_creating_an_impressive_portfolio',
+        title: 'Lesson 3: Creating An Impressive Porfolio',
+        description: 'In this lesson, you will learn how create a compelling film and TV portfolio by defining focus, selecting the best work, organize effectively, showcase your skills, and highlight achievements.'
       },
       {
-        id: "specialisation_niche",
-        title: "Specialisation and Finding Your Niche in Film",
-        description:
-          "Identify and develop your unique niche in the film industry",
-        duration: "45 min",
+        id: 'movie_basic_lesson4_starting_small_in_the_industry',
+        title: 'Lesson 4: Starting Small in the Industry',
+        description: 'In this lesson, you will learn how to start your film and TV career from entry-level positions like production assistants or script readers. Gain skills, network effectively, and build a foundation for advancing in the industry.'
       },
       {
-        id: "stay_current",
-        title: "Stay Current with Film & TV Industry",
-        description: "Keep up with trends and technologies in film and TV",
-        duration: "60 min",
+        id: 'movie_basic_lesson5_internships',
+        title: 'Lesson 5: Internships',
+        description: 'In this lesson, you will learn how internships can gain hands on experience, build you a professional network, and navigate potential drawbacks like unpaid positions and demanding hours. Discover how to find opportunities and maximize your internship experience.'
       },
       {
-        id: "persistence_resilience",
-        title: "Persistence & Resilience",
-        description:
-          "Build mental toughness to overcome challenges in filmmaking",
-        duration: "50 min",
+        id: 'movie_basic_lesson6_specialization',
+        title: 'Lesson 6: Specialization',
+        description: 'In this lesson, you will discover the benefits of specializing in film and TV. Learn how to gain deep knowledge, find career advancement, obtain higher earning potential, build your reputation, expand your network, find personal fulfillment, and master your chosen niche.'
       },
       {
-        id: "find_mentor",
-        title: "Find a Mentor for Building Support for Your Film Career",
-        description:
-          "Seek mentors to guide and support your filmmaking journey",
-        duration: "75 min",
+        id: 'movie_basic_lesson7_stay_current',
+        title: 'Lesson 7: Stay Current',
+        description: 'In this lesson, you will learn how to stay current in the movie and tv industry through media, publications, shows and conferences, and associations and guildes you can join for exclusive insights and networking.'
       },
       {
-        id: "utilise_online_platforms",
-        title:
-          "Utilise Online Platforms for Showcasing & Funding Your Film Work",
-        description:
-          "Leverage online platforms to showcase and fund your films",
-        duration: "40 min",
+        id: 'movie_basic_lesson8_persistence_and_resilience',
+        title: 'Lesson 8: Persistence and Resilience',
+        description: 'In this lesson, you will learn that persistence and resilience are crucial for newcommerse in the film and TV industry. Learn how to improve your skills continously, network effectively, embrace rejection, stay adaptable, and how to celebrate small victories in this dynamic field.'
       },
       {
-        id: "market_yourself",
-        title: "Market Yourself for Building a Creative Brand",
-        description:
-          "Create a personal brand to stand out in the film industry",
-        duration: "45 min",
+        id: 'movie_basic_lesson9_find_a_mentor',
+        title: 'Lesson 9: Find a Mentor',
+        description: 'In this lesson, you will learn how to find a mentor and what to look for. Discover and understand your goals, research professionals, how to network, how to approach mentors respectfully, how to find and consider programs, learn industry insights, and how to establish relationships to support your career journey.'
       },
       {
-        id: "write",
-        title: "Write",
-        description:
-          "Master storytelling through effective scriptwriting techniques",
-        duration: "60 min",
+        id: 'movie_basic_lesson10_utilize_online_platforms',
+        title: 'Lesson 10: Utilize Online Platforms',
+        description: 'In this lesson, you will learn how to use todays digital age to level you up in the film and TV industry. Understand platforms like youtube and vimeo, using crowdfunding sites to your advantage, and finding strategies for success.'
       },
       {
-        id: "be_versatile",
-        title: "Be Versatile",
-        description:
-          "Develop a wide range of skills to adapt to various film roles",
-        duration: "50 min",
+        id: 'movie_basic_lesson11_market_yourself',
+        title: 'Lesson 11: Market Yourself',
+        description: 'In this lesson, you will learn to market yourself in film by building a strong online presence, sharing engaging content, networking with industry professionals, and developing a unique personal brand.'
       },
       {
-        id: "join_unions",
-        title: "Join Unions & Associations",
-        description:
-          "Explore benefits of joining film industry unions and associations",
-        duration: "75 min",
+        id: 'movie_basic_lesson12_breaking_into_the_film_industry',
+        title: 'Lesson 12: Breaking Into the Film Industry',
+        description: 'In this lesson, you will learn essential strategies for breaking into the film industry whether that is in screenwriting or directing. Learn how to network at festivals, gain experience through assistant roles, creating your own content, understanding the business side, joining professional organizations, seeking mentorship, and continually improving your skills.'
       },
       {
-        id: "move_industry_hubs",
-        title: "Move to Industry Hubs",
-        description: "Relocate to film industry hubs for better opportunities",
-        duration: "40 min",
+        id: 'movie_basic_lesson13_be_versatile',
+        title: 'Lesson 13: Be Versatile',
+        description: 'In this lesson, you will learn how to diversify your skills by understanding different roles, develope technical proficiency, how to explore creativity, networking actively, gain varied experience, collaborate effectively, continue education, consider entry level positions, and build a strong portfolio. Versatility enhances your chances of success in this competitive field.'
       },
       {
-        id: "personal_projects",
-        title: "Work on Personal Projects",
-        description: "Create personal film projects to hone your craft",
-        duration: "45 min",
+        id: 'movie_basic_lesson14_join_unions_and_associations',
+        title: 'Lesson 14: Join Unions and Associations',
+        description: 'In this lesson, you will learn why and how you should join unions and associations for protections, resources, and how to network for success in filmmaking. Including insights to international equivalents.'
       },
       {
-        id: "stay_positive_patient",
-        title: "Stay Positive & Patient",
-        description:
-          "Maintain a positive mindset and patience in your film career",
-        duration: "60 min",
-      },
-    ],
-    movie_intermediate: [
-      {
-        id: "education_learning",
-        title: "Education & Learning",
-        description:
-          "Gain essential knowledge and skills for a career in filmmaking",
-        duration: "45 min",
+        id: 'movie_basic_lesson15_move_to_industry_hubs',
+        title: 'Lesson 15: Move to Industry Hubs',
+        description: 'In this lesson, you will learn why you should consider moving to industry hubs like LA, NYC, London, or Vancouver for access to jobs, networking, and cutting edge resources crucial for breaking into the movie business.'
       },
       {
-        id: "networking",
-        title: "Networking",
-        description:
-          "Build connections within the film industry to boost your career",
-        duration: "60 min",
+        id: 'movie_basic_lesson16_work_on_personal_projects',
+        title: 'Lesson 16: Work on Personal Projects',
+        description: 'In this lesson, you will learn how and why to work on independent films or projects, series, and more to showcase your skills and style. Learn to find and utilize local resources, collaborate with others, promote on social media, and enter festivals to gain recognition and advance your career in filmmaking.'
       },
       {
-        id: "create_portfolio",
-        title: "Create a Portfolio",
-        description:
-          "Develop a strong portfolio to showcase your filmmaking skills",
-        duration: "50 min",
+        id: 'movie_basic_lesson17_stay_positive_and_patient',
+        title: 'Lesson 17: Stay Positive and Patient',
+        description: 'In this lesson, you will learn why you should stay positive and patient in the movie business. Set realistic goals, network actively, continue to learn, and stay resilient in the face of setbacks. These strategies and more will keep you motivated and focused on achieving success in filmmamking.'
       },
       {
-        id: "start_small",
-        title: "Start Small",
-        description:
-          "Begin with small film projects to gain experience and confidence",
-        duration: "75 min",
-      },
-      {
-        id: "internships",
-        title: "Internships",
-        description:
-          "Explore internship opportunities to kickstart your film career",
-        duration: "40 min",
-      },
-      {
-        id: "specialisation_niche",
-        title: "Specialisation and Finding Your Niche in Film",
-        description:
-          "Identify and develop your unique niche in the film industry",
-        duration: "45 min",
-      },
-      {
-        id: "stay_current",
-        title: "Stay Current with Film & TV Industry",
-        description: "Keep up with trends and technologies in film and TV",
-        duration: "60 min",
-      },
-      {
-        id: "persistence_resilience",
-        title: "Persistence & Resilience",
-        description:
-          "Build mental toughness to overcome challenges in filmmaking",
-        duration: "50 min",
-      },
-      {
-        id: "find_mentor",
-        title: "Find a Mentor for Building Support for Your Film Career",
-        description:
-          "Seek mentors to guide and support your filmmaking journey",
-        duration: "75 min",
-      },
-      {
-        id: "utilise_online_platforms",
-        title:
-          "Utilise Online Platforms for Showcasing & Funding Your Film Work",
-        description:
-          "Leverage online platforms to showcase and fund your films",
-        duration: "40 min",
-      },
-      {
-        id: "market_yourself",
-        title: "Market Yourself for Building a Creative Brand",
-        description:
-          "Create a personal brand to stand out in the film industry",
-        duration: "45 min",
-      },
-      {
-        id: "write",
-        title: "Write",
-        description:
-          "Master storytelling through effective scriptwriting techniques",
-        duration: "60 min",
-      },
-      {
-        id: "be_versatile",
-        title: "Be Versatile",
-        description:
-          "Develop a wide range of skills to adapt to various film roles",
-        duration: "50 min",
-      },
-      {
-        id: "join_unions",
-        title: "Join Unions & Associations",
-        description:
-          "Explore benefits of joining film industry unions and associations",
-        duration: "75 min",
-      },
-      {
-        id: "move_industry_hubs",
-        title: "Move to Industry Hubs",
-        description: "Relocate to film industry hubs for better opportunities",
-        duration: "40 min",
-      },
-      {
-        id: "personal_projects",
-        title: "Work on Personal Projects",
-        description: "Create personal film projects to hone your craft",
-        duration: "45 min",
-      },
-      {
-        id: "stay_positive_patient",
-        title: "Stay Positive & Patient",
-        description:
-          "Maintain a positive mindset and patience in your film career",
-        duration: "60 min",
-      },
+        id: 'movie_basic_congratulations',
+        title: 'Congratulations!',
+        description: 'Congratulations on completing my online course!'
+      }
     ],
     movie_advanced: [
       {
-        id: "education_learning",
-        title: "Education & Learning",
-        description:
-          "Gain essential knowledge and skills for a career in filmmaking",
-        duration: "45 min",
+        id: 'movie_adv_welcome_how_to_get_your_movie_made',
+        title: 'Welcome to "How To Get Your Movie Made"',
+        description: 'In this lesson, you will learn how to break into the film industry as an independent creator. Gain insights on raising funds, distribution, and transforming your ideas into reality, along with expert advice not typically taught in traditional film schools.'
       },
       {
-        id: "networking",
-        title: "Networking",
-        description:
-          "Build connections within the film industry to boost your career",
-        duration: "60 min",
+        id: 'movie_adv_lesson1_general_advice_for_creators',
+        title: 'Lesson 1: General Advice for Creators',
+        description: 'In this lesson, you will learn essential advice for creators. Staying positive, planning, self awareness, handling criticism, working with professionals, and persistence.'
       },
       {
-        id: "create_portfolio",
-        title: "Create a Portfolio",
-        description:
-          "Develop a strong portfolio to showcase your filmmaking skills",
-        duration: "50 min",
+        id: 'movie_adv_lesson2_developing_an_idea',
+        title: 'Lesson 2: Developing an Idea',
+        description: 'In this lesson, you will learn how to develop a screenplay idea, from idea generation and writing processes to hiring a writer and legal considerations.'
       },
       {
-        id: "start_small",
-        title: "Start Small",
-        description:
-          "Begin with small film projects to gain experience and confidence",
-        duration: "75 min",
+        id: 'movie_adv_lesson3_compromising_your_creative_vision',
+        title: 'Lesson 3: Compromising Your Creative Vision',
+        description: 'In this lesson, you will learn to balance external feedback with your inner voice, maintain your vision, choose collaborators wisely, and value your unique voice.'
       },
       {
-        id: "internships",
-        title: "Internships",
-        description:
-          "Explore internship opportunities to kickstart your film career",
-        duration: "40 min",
+        id: 'movie_adv_lesson4_reasons_for_writing',
+        title: 'Lesson 4: Reasons for Writing',
+        description: 'In this lesson, you will learn the motivations behind writing, strategies for getting screenplays accepted, and tips for successful submissions and career development in the film industry.'
       },
       {
-        id: "specialisation_niche",
-        title: "Specialisation and Finding Your Niche in Film",
-        description:
-          "Identify and develop your unique niche in the film industry",
-        duration: "45 min",
+        id: 'movie_adv_lesson5_common_issues_in_writing',
+        title: 'Lesson 5: Common Issues in Writing',
+        description: 'In this lesson, you will learn to address common writing issues such as plagiarism, fact checking, securing contracts, writing for various media, and navigating early career challenges.'
       },
       {
-        id: "stay_current",
-        title: "Stay Current with Film & TV Industry",
-        description: "Keep up with trends and technologies in film and TV",
-        duration: "60 min",
+        id: 'movie_adv_lesson6_the_right_role_for_you',
+        title: 'Lesson 6: The Right Role For you.',
+        description: 'In this lesson, you will learn to identify the right role for yourself in the creative industry, from producer to director to writer, and how to align your strengths and goals with your career choice.'
       },
       {
-        id: "persistence_resilience",
-        title: "Persistence & Resilience",
-        description:
-          "Build mental toughness to overcome challenges in filmmaking",
-        duration: "50 min",
+        id: 'movie_adv_lesson7_career_from_creativity',
+        title: 'Lesson 7: Career from Creativity',
+        description: 'In this lesson, you will learn to balance creative passion with business skills for a sustainable career, covering financial management, reputation building, market dynamics, and flexibility.'
       },
       {
-        id: "find_mentor",
-        title: "Find a Mentor for Building Support for Your Film Career",
-        description:
-          "Seek mentors to guide and support your filmmaking journey",
-        duration: "75 min",
+        id: 'movie_adv_lesson8_being_professional',
+        title: 'Lesson 8: Being Professional',
+        description: 'In this lesson, you will learn how to blend creativity with business skills, handle contracts, meet deadlines, and pitch projects effectively.'
       },
       {
-        id: "utilise_online_platforms",
-        title:
-          "Utilise Online Platforms for Showcasing & Funding Your Film Work",
-        description:
-          "Leverage online platforms to showcase and fund your films",
-        duration: "40 min",
+        id: 'movie_adv_lesson9_sharing_ideas',
+        title: 'Lesson 9: Sharing Ideas',
+        description: 'In this lesson, you will learn how to balance creativity with financial planning, maintain ethics in business, and ensure transparent communication and budgeting.'
       },
       {
-        id: "market_yourself",
-        title: "Market Yourself for Building a Creative Brand",
-        description:
-          "Create a personal brand to stand out in the film industry",
-        duration: "45 min",
+        id: 'movie_adv_lesson10_who_should_i_work_with',
+        title: 'Lesson 10: Who should I work with?',
+        description: 'In this lesson, you will learn how to choose projects wisely, collaborate effectively, and prepare thoroughly for successful creative endeavors.'
       },
       {
-        id: "write",
-        title: "Write",
-        description:
-          "Master storytelling through effective scriptwriting techniques",
-        duration: "60 min",
+        id: 'movie_adv_lesson11_competition',
+        title: 'Lesson 11: Competition',
+        description: 'In this lesson, you will learn about your competition, who you are competing with, how to better yourself, and how to prepare for competition.'
       },
       {
-        id: "be_versatile",
-        title: "Be Versatile",
-        description:
-          "Develop a wide range of skills to adapt to various film roles",
-        duration: "50 min",
+        id: 'movie_adv_lesson12_agents',
+        title: 'Lesson 12: Agents',
+        description: 'In this lesson, you will learn the role of agent, why you should find one, how to get one, and building your portfolio with one.'
       },
       {
-        id: "join_unions",
-        title: "Join Unions & Associations",
-        description:
-          "Explore benefits of joining film industry unions and associations",
-        duration: "75 min",
+        id: 'movie_adv_lesson13_financing_your_film',
+        title: 'Lesson 13: Financing Your Film',
+        description: 'In this lesson, you will learn the importance of financing your film, how to raise money, and the steps and tips to take in order to manage your expectations.'
       },
       {
-        id: "move_industry_hubs",
-        title: "Move to Industry Hubs",
-        description: "Relocate to film industry hubs for better opportunities",
-        duration: "40 min",
+        id: 'movie_adv_lesson14_selling_your_story',
+        title: 'Lesson 14: Selling Your Story',
+        description: 'In this lesson, you will learn how to sell your story and ideas, understanding the industry for creativity and marketing, and how to continue to learn.'
       },
       {
-        id: "personal_projects",
-        title: "Work on Personal Projects",
-        description: "Create personal film projects to hone your craft",
-        duration: "45 min",
+        id: 'movie_adv_lesson15_the_perfect_pitch',
+        title: 'Lesson 15: The Perfect Pitch',
+        description: 'In this lesson, you will learn how to create, plan, and present your perfect pitch to investors with long term strategies to follow you, your story, brand, and more.'
       },
       {
-        id: "stay_positive_patient",
-        title: "Stay Positive & Patient",
-        description:
-          "Maintain a positive mindset and patience in your film career",
-        duration: "60 min",
+        id: 'movie_adv_lesson16_understanding_the_market',
+        title: 'Lesson 16: Understanding The Market',
+        description: 'In this lesson, you will learn how to work within your market, compete with studios, and understand the system with industry professionals.'
       },
-    ],
-  },
-   film: {
-    film_basic: [
       {
-        id: "education_learning",
-        title: "Education & Learning",
-        description:
-          "Gain essential knowledge and skills for a career in filmmaking",
-        duration: "45 min",
+        id: 'movie_adv_lesson17_negotiations',
+        title: 'Lesson 17: Negotiations',
+        description: 'In this lesson, you will learn how to negotiate, take or deny deals, understand risks, and how to become established.'
       },
       {
-        id: "networking",
-        title: "Networking",
-        description:
-          "Build connections within the film industry to boost your career",
-        duration: "60 min",
+        id: 'movie_adv_lesson18_contracts',
+        title: 'Lesson 18: Contracts',
+        description: 'In this lesson, you will learn the importance of contracts, what to include, things to consider, and how still enjoy your work through all of the legal jargon.'
       },
       {
-        id: "create_portfolio",
-        title: "Create a Portfolio",
-        description:
-          "Develop a strong portfolio to showcase your filmmaking skills",
-        duration: "50 min",
+        id: 'movie_adv_lesson19_making_your_movie',
+        title: 'Lesson 19: Making Your Movie',
+        description: 'In this lesson, you will learn how to get your movie made and the key steps to a proposal, story development, scripts, and finances. Decide if you should manage this yourself or with an Agent.'
       },
       {
-        id: "start_small",
-        title: "Start Small",
-        description:
-          "Begin with small film projects to gain experience and confidence",
-        duration: "75 min",
-      },
-      {
-        id: "internships",
-        title: "Internships",
-        description:
-          "Explore internship opportunities to kickstart your film career",
-        duration: "40 min",
-      },
-      {
-        id: "specialisation_niche",
-        title: "Specialisation and Finding Your Niche in Film",
-        description:
-          "Identify and develop your unique niche in the film industry",
-        duration: "45 min",
-      },
-      {
-        id: "stay_current",
-        title: "Stay Current with Film & TV Industry",
-        description: "Keep up with trends and technologies in film and TV",
-        duration: "60 min",
-      },
-      {
-        id: "persistence_resilience",
-        title: "Persistence & Resilience",
-        description:
-          "Build mental toughness to overcome challenges in filmmaking",
-        duration: "50 min",
-      },
-      {
-        id: "find_mentor",
-        title: "Find a Mentor for Building Support for Your Film Career",
-        description:
-          "Seek mentors to guide and support your filmmaking journey",
-        duration: "75 min",
-      },
-      {
-        id: "utilise_online_platforms",
-        title:
-          "Utilise Online Platforms for Showcasing & Funding Your Film Work",
-        description:
-          "Leverage online platforms to showcase and fund your films",
-        duration: "40 min",
-      },
-      {
-        id: "market_yourself",
-        title: "Market Yourself for Building a Creative Brand",
-        description:
-          "Create a personal brand to stand out in the film industry",
-        duration: "45 min",
-      },
-      {
-        id: "write",
-        title: "Write",
-        description:
-          "Master storytelling through effective scriptwriting techniques",
-        duration: "60 min",
-      },
-      {
-        id: "be_versatile",
-        title: "Be Versatile",
-        description:
-          "Develop a wide range of skills to adapt to various film roles",
-        duration: "50 min",
-      },
-      {
-        id: "join_unions",
-        title: "Join Unions & Associations",
-        description:
-          "Explore benefits of joining film industry unions and associations",
-        duration: "75 min",
-      },
-      {
-        id: "move_industry_hubs",
-        title: "Move to Industry Hubs",
-        description: "Relocate to film industry hubs for better opportunities",
-        duration: "40 min",
-      },
-      {
-        id: "personal_projects",
-        title: "Work on Personal Projects",
-        description: "Create personal film projects to hone your craft",
-        duration: "45 min",
-      },
-      {
-        id: "stay_positive_patient",
-        title: "Stay Positive & Patient",
-        description:
-          "Maintain a positive mindset and patience in your film career",
-        duration: "60 min",
-      },
-    ],
-    film_intermediate: [
-      {
-        id: "education_learning",
-        title: "Education & Learning",
-        description:
-          "Gain essential knowledge and skills for a career in filmmaking",
-        duration: "45 min",
-      },
-      {
-        id: "networking",
-        title: "Networking",
-        description:
-          "Build connections within the film industry to boost your career",
-        duration: "60 min",
-      },
-      {
-        id: "create_portfolio",
-        title: "Create a Portfolio",
-        description:
-          "Develop a strong portfolio to showcase your filmmaking skills",
-        duration: "50 min",
-      },
-      {
-        id: "start_small",
-        title: "Start Small",
-        description:
-          "Begin with small film projects to gain experience and confidence",
-        duration: "75 min",
-      },
-      {
-        id: "internships",
-        title: "Internships",
-        description:
-          "Explore internship opportunities to kickstart your film career",
-        duration: "40 min",
-      },
-      {
-        id: "specialisation_niche",
-        title: "Specialisation and Finding Your Niche in Film",
-        description:
-          "Identify and develop your unique niche in the film industry",
-        duration: "45 min",
-      },
-      {
-        id: "stay_current",
-        title: "Stay Current with Film & TV Industry",
-        description: "Keep up with trends and technologies in film and TV",
-        duration: "60 min",
-      },
-      {
-        id: "persistence_resilience",
-        title: "Persistence & Resilience",
-        description:
-          "Build mental toughness to overcome challenges in filmmaking",
-        duration: "50 min",
-      },
-      {
-        id: "find_mentor",
-        title: "Find a Mentor for Building Support for Your Film Career",
-        description:
-          "Seek mentors to guide and support your filmmaking journey",
-        duration: "75 min",
-      },
-      {
-        id: "utilise_online_platforms",
-        title:
-          "Utilise Online Platforms for Showcasing & Funding Your Film Work",
-        description:
-          "Leverage online platforms to showcase and fund your films",
-        duration: "40 min",
-      },
-      {
-        id: "market_yourself",
-        title: "Market Yourself for Building a Creative Brand",
-        description:
-          "Create a personal brand to stand out in the film industry",
-        duration: "45 min",
-      },
-      {
-        id: "write",
-        title: "Write",
-        description:
-          "Master storytelling through effective scriptwriting techniques",
-        duration: "60 min",
-      },
-      {
-        id: "be_versatile",
-        title: "Be Versatile",
-        description:
-          "Develop a wide range of skills to adapt to various film roles",
-        duration: "50 min",
-      },
-      {
-        id: "join_unions",
-        title: "Join Unions & Associations",
-        description:
-          "Explore benefits of joining film industry unions and associations",
-        duration: "75 min",
-      },
-      {
-        id: "move_industry_hubs",
-        title: "Move to Industry Hubs",
-        description: "Relocate to film industry hubs for better opportunities",
-        duration: "40 min",
-      },
-      {
-        id: "personal_projects",
-        title: "Work on Personal Projects",
-        description: "Create personal film projects to hone your craft",
-        duration: "45 min",
-      },
-      {
-        id: "stay_positive_patient",
-        title: "Stay Positive & Patient",
-        description:
-          "Maintain a positive mindset and patience in your film career",
-        duration: "60 min",
-      },
-    ],
-    film_advanced: [
-      {
-        id: "education_learning",
-        title: "Education & Learning",
-        description:
-          "Gain essential knowledge and skills for a career in filmmaking",
-        duration: "45 min",
-      },
-      {
-        id: "networking",
-        title: "Networking",
-        description:
-          "Build connections within the film industry to boost your career",
-        duration: "60 min",
-      },
-      {
-        id: "create_portfolio",
-        title: "Create a Portfolio",
-        description:
-          "Develop a strong portfolio to showcase your filmmaking skills",
-        duration: "50 min",
-      },
-      {
-        id: "start_small",
-        title: "Start Small",
-        description:
-          "Begin with small film projects to gain experience and confidence",
-        duration: "75 min",
-      },
-      {
-        id: "internships",
-        title: "Internships",
-        description:
-          "Explore internship opportunities to kickstart your film career",
-        duration: "40 min",
-      },
-      {
-        id: "specialisation_niche",
-        title: "Specialisation and Finding Your Niche in Film",
-        description:
-          "Identify and develop your unique niche in the film industry",
-        duration: "45 min",
-      },
-      {
-        id: "stay_current",
-        title: "Stay Current with Film & TV Industry",
-        description: "Keep up with trends and technologies in film and TV",
-        duration: "60 min",
-      },
-      {
-        id: "persistence_resilience",
-        title: "Persistence & Resilience",
-        description:
-          "Build mental toughness to overcome challenges in filmmaking",
-        duration: "50 min",
-      },
-      {
-        id: "find_mentor",
-        title: "Find a Mentor for Building Support for Your Film Career",
-        description:
-          "Seek mentors to guide and support your filmmaking journey",
-        duration: "75 min",
-      },
-      {
-        id: "utilise_online_platforms",
-        title:
-          "Utilise Online Platforms for Showcasing & Funding Your Film Work",
-        description:
-          "Leverage online platforms to showcase and fund your films",
-        duration: "40 min",
-      },
-      {
-        id: "market_yourself",
-        title: "Market Yourself for Building a Creative Brand",
-        description:
-          "Create a personal brand to stand out in the film industry",
-        duration: "45 min",
-      },
-      {
-        id: "write",
-        title: "Write",
-        description:
-          "Master storytelling through effective scriptwriting techniques",
-        duration: "60 min",
-      },
-      {
-        id: "be_versatile",
-        title: "Be Versatile",
-        description:
-          "Develop a wide range of skills to adapt to various film roles",
-        duration: "50 min",
-      },
-      {
-        id: "join_unions",
-        title: "Join Unions & Associations",
-        description:
-          "Explore benefits of joining film industry unions and associations",
-        duration: "75 min",
-      },
-      {
-        id: "move_industry_hubs",
-        title: "Move to Industry Hubs",
-        description: "Relocate to film industry hubs for better opportunities",
-        duration: "40 min",
-      },
-      {
-        id: "personal_projects",
-        title: "Work on Personal Projects",
-        description: "Create personal film projects to hone your craft",
-        duration: "45 min",
-      },
-      {
-        id: "stay_positive_patient",
-        title: "Stay Positive & Patient",
-        description:
-          "Maintain a positive mindset and patience in your film career",
-        duration: "60 min",
-      },
-    ],
-  },
-  theatre: {
-    theatre_basic: [
-      {
-        id: "stage_manager_role",
-        title: "the role of the stage manager",
-        description:
-          "Explores the basic duties and responsibilities of a stage manager.",
-      },
-      {
-        id: "drama_school_application",
-        title: "applying to university or drama school",
-        description:
-          "Guidance on applying to university or drama school programs.",
-      },
-      {
-        id: "transferable_skills",
-        title:
-          "Transferrable Skills for other careers and jobs Teaching LAMDA exams",
-        description:
-          "An overview of skills that can be applied to other careers, including teaching.",
-      },
-      {
-        id: "acting_character_building",
-        title: "acting beginning to build your character",
-        description:
-          "An introduction to the fundamentals of character building.",
-      },
-      {
-        id: "improvisation_intro",
-        title: "Improvisation overview",
-        description: "A general overview of improvisation techniques.",
-      },
-      {
-        id: "funding_intro",
-        title: "Applying for Funding",
-        description: "An introduction to the process of applying for funding.",
-      },
-      {
-        id: "audio_work",
-        title: "Audio Work",
-        description:
-          "An introduction to audio work and sound design for theatre.",
-      },
-      {
-        id: "budget_tutorial",
-        title: "Budget Tutorial",
-        description:
-          "A basic tutorial on creating and managing theatre budgets.",
-      },
-      {
-        id: "budgeting_rd_project",
-        title: "Budgeting for a Research and Development Project",
-        description:
-          "Specifics on budgeting for a research and development project.",
-      },
-      {
-        id: "careers_hair_makeup",
-        title: "careers; hair and make up",
-        description:
-          "An overview of career paths in hair and makeup for theatre.",
-      },
-      {
-        id: "characterization_7_questions",
-        title: "Characterisation given circumstances and the 7 questions",
-        description:
-          "An introduction to characterization using given circumstances and the 7 questions.",
-      },
-      {
-        id: "costume_props_budget",
-        title: "costume and props; sourcing on a budget",
-        description:
-          "Tips for sourcing costumes and props on a limited budget.",
-      },
-      {
-        id: "educational_theatre",
-        title: "educational theatre",
-        description: "Exploring opportunities in educational theatre.",
-      },
-      {
-        id: "story_devising",
-        title: "establishing the story in a scene; devising",
-        description: "Techniques for establishing the story during devising.",
-      },
-      {
-        id: "plan_drama_workshop",
-        title: "how to plan a drama workshop",
-        description: "A step-by-step guide to planning a drama workshop.",
-      },
-      {
-        id: "improvisation_basics",
-        title: "Improvisation Basica and fundamentals",
-        description: "The basic principles and fundamentals of improvisation.",
-      },
-      {
-        id: "get_in_get_out",
-        title: "get in and get out",
-        description: "A guide to the process of getting in and out of a venue.",
-      },
-      {
-        id: "theatre_agents",
-        title: "How Theatre Agents Work",
-        description:
-          "An explanation of the role of a theatre agent and how they work.",
-      },
-      {
-        id: "lighting_storytelling",
-        title: "Lighting as a Storytelling Tool",
-        description:
-          "An introduction to using lighting to enhance storytelling.",
-      },
-      {
-        id: "production_partnership",
-        title:
-          "Production Partnership finding the right partners and support for your project",
-        description:
-          "Tips for finding the right production partners and support.",
-      },
-      {
-        id: "theatre_finance_models",
-        title: "profit share, commercial and subsidised theatre explained",
-        description: "An explanation of different financial models in theatre.",
-      },
-      {
-        id: "receiving_producing_house",
-        title: "receiving house and producing house",
-        description:
-          "An overview of the differences between receiving and producing houses.",
-      },
-      {
-        id: "receiving_producing_explained",
-        title: "receiving house vs producing house 10 second explanations",
-        description:
-          "Quick, concise explanations of receiving vs. producing houses.",
-      },
-      {
-        id: "rehearsal_and_performance",
-        title: "rehearsal and performance",
-        description:
-          "An introduction to the rehearsal and performance process.",
-        sub_module: [
-          {
-            id: "rehearsal_stages",
-            title: "stages of a rehearsal",
-            description: "A breakdown of the different stages of a rehearsal.",
-          },
-          {
-            id: "effective_rehearsal_time",
-            title: "using rehearsal time effectively",
-            description:
-              "Tips and strategies for making the most of rehearsal time.",
-          },
-        ],
-      },
-      {
-        id: "make_a_show_intro",
-        title: "So you want to make a show",
-        description: "A guide for those looking to create their own show.",
-        sub_module: [
-          {
-            id: "summary_1",
-            title: "1 10 SECOND SUMMARY",
-            description: "A quick 10-second summary.",
-          },
-          {
-            id: "summary_2",
-            title: "2 10 SECOND SUMMARY",
-            description: "A second quick 10-second summary.",
-          },
-          {
-            id: "summary_5",
-            title: "5 10 SECOND SUMMARY",
-            description: "A fifth quick 10-second summary.",
-          },
-          {
-            id: "summary_6",
-            title: "6 10 SECOND SUMMARY",
-            description: "A sixth quick 10-second summary.",
-          },
-          {
-            id: "summary_7",
-            title: "7 10 SECOND SUMMARY",
-            description: "A seventh quick 10-second summary.",
-          },
-        ],
-      },
-      {
-        id: "sourcing_props",
-        title: "Sourcing Props",
-        description: "A guide to sourcing props for a production.",
-      },
-      {
-        id: "stage_lighting_tutorial",
-        title: "Stage Lighting Tutorial",
-        description: "A basic tutorial on stage lighting.",
-      },
-      {
-        id: "dress_rehearsal_purpose",
-        title: "The Purpose of a Dress Rehearsal & What Happens During It",
-        description: "Explains the purpose and events of a dress rehearsal.",
-      },
-      {
-        id: "tech_rehearsal_purpose",
-        title: "The Purpose of a Technical Rehearsal & What Happens During It",
-        description:
-          "Explains the purpose and events of a technical rehearsal.",
-      },
-      {
-        id: "university_drama_school",
-        title: "University or Drama School",
-        description:
-          "Information and advice about applying to university or drama school.",
-      },
-      {
-        id: "theatre_roles",
-        title: "Theatre roles explained - who does what in a show",
-        description: "An overview of different roles in a theatre production.",
-      },
-      {
-        id: "sourcing_auditions",
-        title: "Where to Source Auditions",
-        description: "Guidance on finding auditions.",
-      },
-      {
-        id: "receiving_house_paid",
-        title: "What is a receiving house and how are shows paid for?",
-        description:
-          "An explanation of receiving houses and their financial model.",
-      },
-      {
-        id: "producing_house_paid",
-        title: "What is a producing house and how are shows paid for?",
-        description:
-          "An explanation of producing houses and their financial model.",
-      },
-      {
-        id: "networking_expansion",
-        title: "expanding your networking",
-        description: "Strategies for expanding your professional network.",
-      },
-      {
-        id: "networking_start",
-        title: "a starting point for networking",
-        description: "Essential tips for beginning to network in the industry.",
-      },
-      {
-        id: "networking",
-        title: "Networking",
-        description: "A comprehensive guide to effective networking.",
-      },
-      {
-        id: "story_improvisation",
-        title:
-          "establishing the story; improvisation for acting and rehearsals",
-        description:
-          "Improvisation techniques for story and character development for all levels.",
-      },
-      {
-        id: "dont_be_afraid_to_fail",
-        title: "NSDF don't be afraid to fail",
-        description:
-          "Guidance on embracing failure as a part of the creative process.",
-      },
-      {
-        id: "all_levels_improvisation_exercise",
-        title: "Improvisation exercise",
-        description: "An improvisation exercise for all levels.",
-      },
-    ],
-    theatre_intermediate: [
-      {
-        id: "tech_rehearsal_intermediate",
-        title: "The Purpose of a Technical Rehearsal & What Happens During It",
-        description: "A detailed breakdown of the technical rehearsal process.",
-      },
-      {
-        id: "character_dev_4",
-        title: "How to develop a character 4",
-        description:
-          "Part four of the intermediate series on character development.",
-      },
-      {
-        id: "stage_manager_intermediate",
-        title: "the role of the stage manager",
-        description:
-          "Explores the duties and responsibilities of a stage manager at an intermediate level.",
-      },
-      {
-        id: "portfolio_career",
-        title: "a portfolio career in theatre",
-        description:
-          "Strategies for building and managing a diverse portfolio career in theatre.",
-      },
-      {
-        id: "acting_intermediate",
-        title: "acting",
-        description: "Intermediate-level acting techniques and exercises.",
-      },
-      {
-        id: "funding_intermediate",
-        title: "Applying for Funding",
-        description:
-          "An intermediate look at the process of applying for funding.",
-      },
-      {
-        id: "audio_work_intermediate",
-        title: "Audio Work",
-        description:
-          "An introduction to audio work and sound design for theatre.",
-      },
-      {
-        id: "budget_tutorial_intermediate",
-        title: "Budget Tutorial",
-        description:
-          "An intermediate tutorial on creating and managing theatre budgets.",
-      },
-      {
-        id: "budgeting_small_tour",
-        title: "Budgeting for a small scale tour",
-        description: "Specifics on budgeting for a small-scale theatre tour.",
-      },
-      {
-        id: "careers_ticket_sales",
-        title:
-          "careers and jobs in theatre; theatre Ticket Sales Options & How the Box Office",
-        description:
-          "A look at careers in theatre ticket sales and box office management.",
-      },
-      {
-        id: "costume_props",
-        title: "costume and props",
-        description: "Intermediate topics related to costume and props.",
-        sub_module: [
-          {
-            id: "bespoke_costumes",
-            title: "bespoke costumes",
-            description: "Creating bespoke costumes for specific productions.",
-          },
-          {
-            id: "hair_wigs",
-            title: "hair styling and wigs",
-            description: "Techniques for hair styling and wig use in theatre.",
-          },
-          {
-            id: "prop_table",
-            title: "the prop table",
-            description:
-              "Best practices for managing a prop table during a production.",
-          },
-          {
-            id: "tips_professionals",
-            title: "tips for aspiring professionals",
-            description:
-              "Practical tips for aspiring professionals in costume and props.",
-          },
-          {
-            id: "training_pathways",
-            title: "training and career pathways",
-            description:
-              "Guidance on training and career paths in costume and props.",
-          },
-        ],
-      },
-      {
-        id: "staging_styles",
-        title: "Different Theatre Staging Styles Explained",
-        description: "Explanation of various theatre staging styles.",
-      },
-      {
-        id: "educational_theatre_intermediate",
-        title: "Educational Theatre",
-        description:
-          "Exploring opportunities in educational theatre at an intermediate level.",
-      },
-      {
-        id: "freelance_vs_employed",
-        title: "Freelance vs Employed Status in Theatre",
-        description:
-          "A detailed comparison of freelance vs. employed status in the theatre industry.",
-      },
-      {
-        id: "theatre_roles_work",
-        title: "How Theatre Roles Work",
-        description:
-          "An intermediate guide to understanding the various roles in theatre.",
-      },
-      {
-        id: "character_dev_1",
-        title: "How to develop a character 1",
-        description:
-          "Part one of the intermediate series on character development.",
-      },
-      {
-        id: "character_dev_3",
-        title: "How to develop a character 3",
-        description:
-          "Part three of the intermediate series on character development.",
-      },
-      {
-        id: "character_dev_5_5",
-        title: "How to develop a character 5 5",
-        description:
-          "Part five, sub-part five, of the intermediate series on character development.",
-      },
-      {
-        id: "character_dev_5",
-        title: "How to develop a character 5",
-        description:
-          "Part five of the intermediate series on character development.",
-      },
-      {
-        id: "character_dev_6",
-        title: "How to develop a character 6",
-        description:
-          "Part six of the intermediate series on character development.",
-      },
-      {
-        id: "character_development",
-        title: "How to develop a character",
-        description:
-          "An intermediate guide to the character development process.",
-      },
-      {
-        id: "receiving_producing_intermediate",
-        title: "receiving house and producing house",
-        description:
-          "A deeper look at the roles of receiving and producing houses.",
-      },
-      {
-        id: "register_self_employed",
-        title: "registering as self employed",
-        description:
-          "Steps to register as a self-employed professional in the arts.",
-      },
-      {
-        id: "stage_lighting_intermediate",
-        title: "Stage Lighting Tutorial",
-        description: "An intermediate tutorial on stage lighting techniques.",
-      },
-      {
-        id: "tour_manager_role",
-        title: "the role of the tour manager",
-        description:
-          "Understanding the responsibilities and challenges of a tour manager.",
-      },
-      {
-        id: "ticket_sales_box_office",
-        title: "Theatre Ticket Sales Options & How the Box Office Works",
-        description: "Details ticket sales options and box office operations.",
-      },
-      {
-        id: "theatre_lighting_types",
-        title: "Types of Theatre Lighting",
-        description:
-          "Explores different types of theatre lighting and their applications.",
-      },
-      {
-        id: "voice_acting",
-        title: "voice acting",
-        description: "An introduction to voice acting techniques for theatre.",
-      },
-      {
-        id: "production_companies",
-        title: "What Are Production Companies",
-        description:
-          "An overview of what production companies are and their functions.",
-      },
-      {
-        id: "community_theatre",
-        title: "What Is Community Theatre",
-        description: "An explanation of what community theatre is.",
-      },
-      {
-        id: "freelancer_promotion",
-        title: "Where to Promote Yourself as a Performing Arts Freelancer",
-        description:
-          "Tips for promoting yourself as a freelancer in the performing arts.",
-      },
-      {
-        id: "production_team_roles",
-        title: "The Production Team at a Producing House and a Receiving House",
-        description:
-          "An in-depth look at production teams in different types of venues.",
-      },
-      {
-        id: "production_team_what_is",
-        title: "what is a production team",
-        description:
-          "An overview of the roles and responsibilities within a production team.",
-      },
-      {
-        id: "voice_acting_careers",
-        title: "voice acting and careers",
-        description:
-          "An overview of voice acting and related career opportunities.",
-      },
-      {
-        id: "networking_expansion",
-        title: "expanding your networking",
-        description: "Strategies for expanding your professional network.",
-      },
-      {
-        id: "networking_start",
-        title: "a starting point for networking",
-        description: "Essential tips for beginning to network in the industry.",
-      },
-      {
-        id: "networking",
-        title: "Networking",
-        description: "A comprehensive guide to effective networking.",
-      },
-      {
-        id: "story_improvisation",
-        title:
-          "establishing the story; improvisation for acting and rehearsals",
-        description:
-          "Improvisation techniques for story and character development for all levels.",
-      },
-      {
-        id: "dont_be_afraid_to_fail",
-        title: "NSDF don't be afraid to fail",
-        description:
-          "Guidance on embracing failure as a part of the creative process.",
-      },
-    ],
-    theatre_advanced: [
-      {
-        id: "stage_manager_advanced",
-        title: "the role of the stage manager",
-        description:
-          "Explores the advanced duties and responsibilities of a stage manager.",
-      },
-      {
-        id: "receiving_producing_advanced",
-        title: "receiving house and producing house",
-        description:
-          "A deep dive into the operations of receiving and producing houses.",
-      },
-      {
-        id: "ticket_sales_advanced",
-        title: "Theatre Ticket Sales Options & How the Box Office Works",
-        description:
-          "Details various ticket sales options and box office operations.",
-      },
-      {
-        id: "budget_tutorial_advanced",
-        title: "Budget Tutorial",
-        description:
-          "An advanced tutorial on creating and managing theatre budgets.",
-      },
-      {
-        id: "community_grants",
-        title: "Community Theatre Grants",
-        description:
-          "Guidance on identifying and applying for grants for community theatre projects.",
-      },
-      {
-        id: "equity",
-        title: "Equity",
-        description: "Understanding the role and function of the Equity union.",
-      },
-      {
-        id: "self_employed_register_advanced",
-        title:
-          "How to Register as Self Employed with freelancers in theatre and the creative art",
-        description:
-          "Step-by-step guide to registering as a self-employed freelancer in the arts.",
-      },
-      {
-        id: "portfolio_career_advanced",
-        title: "a portfolio career in theatre",
-        description:
-          "Advanced strategies for building and managing a diverse portfolio career.",
-      },
-      {
-        id: "funding_advanced",
-        title: "Applying for Funding",
-        description: "An advanced look at the process of applying for funding.",
-      },
-      {
-        id: "characterisation_advanced",
-        title: "Characterisation using given circumstances",
-        description:
-          "Advanced techniques for developing a character using given circumstances.",
-      },
-      {
-        id: "hair_makeup_jobs",
-        title: "careers; jobs in hair and make up",
-        description:
-          "An overview of advanced career paths in hair and makeup for theatre.",
-      },
-      {
-        id: "staging_styles_advanced",
-        title: "Different Theatre Staging Styles Explained",
-        description: "Explanation of various theatre staging styles in detail.",
-      },
-      {
-        id: "educational_theatre_advanced",
-        title: "Educational Theatre",
-        description:
-          "Exploring advanced topics and opportunities in educational theatre.",
-      },
-      {
-        id: "freelance_vs_employed_advanced",
-        title: "Freelance vs Employed Status in Theatre",
-        description:
-          "A detailed comparison of freelance vs. employed status in the theatre industry.",
-      },
-      {
-        id: "characterisation_research",
-        title: "research for characterisation",
-        description:
-          "Techniques for in-depth research to inform character development.",
-      },
-      {
-        id: "script_writing_advanced",
-        title: "script writing",
-        description:
-          "An advanced look at the principles and practice of script writing.",
-      },
-      {
-        id: "special_effects_fx",
-        title: "Special Effects FX",
-        description:
-          "Covers the use and implementation of special effects in theatre.",
-      },
-      {
-        id: "spotlight_promotion",
-        title: "Spotlight promotion",
-        description:
-          "Strategies for using Spotlight for professional promotion and career advancement.",
-      },
-      {
-        id: "tech_rehearsal_advanced",
-        title: "The Purpose of a Technical Rehearsal & What Happens During It",
-        description: "A detailed breakdown of the technical rehearsal process.",
-      },
-      {
-        id: "tour_manager_advanced",
-        title: "the role of the tour manager",
-        description:
-          "Understanding the responsibilities and challenges of a tour manager.",
-      },
-      {
-        id: "equity_contracts",
-        title: "Understanding Equity Contracts",
-        description:
-          "A guide to interpreting and negotiating Equity contracts.",
-      },
-      {
-        id: "theatre_lighting_advanced",
-        title: "Types of Theatre Lighting",
-        description:
-          "Explores different types of theatre lighting and their applications.",
-      },
-      {
-        id: "stage_event_lighting_beginner_to_Next_Level",
-        title: "Advanced Stage and Event Lighting – Beginner-to-Next-Level",
-        description:
-          "An advanced look at stage and event lighting techniques from beginner to next level.",
-      },
-      {
-        id: "voice_acting_careers_advanced",
-        title: "voice acting and careers",
-        description:
-          "An overview of advanced voice acting techniques and career opportunities.",
-      },
-      {
-        id: "arts_council_mov",
-        title: "What Is the Arts Council mov",
-        description: "Explains the role and functions of the Arts Council.",
-      },
-      {
-        id: "theatre_production_timeline",
-        title: "who does what – and when during the life of theatre production",
-        description:
-          "A comprehensive timeline of roles and responsibilities during a production.",
-      },
-      {
-        id: "networking_expansion",
-        title: "expanding your networking",
-        description: "Strategies for expanding your professional network.",
-      },
-      {
-        id: "networking_start",
-        title: "a starting point for networking",
-        description: "Essential tips for beginning to network in the industry.",
-      },
-      {
-        id: "networking",
-        title: "Networking",
-        description: "A comprehensive guide to effective networking.",
-      },
-      {
-        id: "story_improvisation",
-        title:
-          "establishing the story; improvisation for acting and rehearsals",
-        description:
-          "Improvisation techniques for story and character development for all levels.",
-      },
-      {
-        id: "dont_be_afraid_to_fail",
-        title: "NSDF don't be afraid to fail",
-        description:
-          "Guidance on embracing failure as a part of the creative process.",
-      },
-    ],
+        id: 'movie_adv_lesson20_casting_actors',
+        title: 'Lesson 20: Casting Actors',
+        description: 'In this lesson, you will learn the steps to casting actors, who to consider, how to find them, how to market with them, and choosing the right ones.'
+      },
+      {
+        id: 'movie_adv_congratulations',
+        title: 'Congratulations!',
+        description: 'Congratulations on completing my online course!'
+      }
+    ]
   },
 };
 
@@ -1728,161 +355,157 @@ const courseModules: Record<string, Record<string, ModuleType[]>> = {
 // --------------------------- COHORTS ---------------------------
 const cohorts: CohortType[] = [
   {
-    id: "cohort_dance",
-    name: "Dance Cohort",
-    description: "Master different dance styles and performance skills",
+    id: "movie",
+    name: "Live Coaching Cohort",
+    description: "Master different movie-making skills and techniques",
     color: "bg-pink-500",
     status: "active",
     variants: [
       {
-        id: "basic",
-        name: "Basic",
-        description: "Introduction to dance fundamentals",
-        duration: "4 weeks",
-        features: ["Basic choreography", "Body conditioning", "Performance basics"],
+        id: "silver",
+        name: "Silver",
+        description: "Beginners Live Coaching Cohort (Silver Level)",
+        duration: "24 hours",
+        features: ["Eight x 3 hour live Zoom workshops"],
       },
       {
-        id: "intermediate",
-        name: "Intermediate",
-        description: "Expand dance skills and techniques",
-        duration: "8 weeks",
+        id: "gold",
+        name: "Gold",
+        description: "Intermediate Live Coaching Cohort (Gold Level)",
+        duration: "24 hours",
         features: [
-          "Advanced choreography",
-          "Stage presence",
-          "Improvisation skills",
+          "Eight x 3 hour live Zoom workshops",
         ],
       },
       {
-        id: "advanced",
-        name: "Advanced",
-        description: "Professional-level dance mastery",
-        duration: "12 weeks",
+        id: "platinum",
+        name: "Platinum",
+        description: "Advanced Live Coaching Cohort (Platinum Level)",
+        duration: "24 hours",
         features: [
-          "Complex choreography",
-          "Live performance experience",
-          "Creative direction",
+          "Eight x 3 hour live Zoom workshops",
+        ],
+      },
+      {
+        id: "full_program",
+        name: "Full Programme Upgrade",
+        description: "Complete Live Coaching Cohort (Full Programme Upgrade)",
+        duration: "72 hours",
+        features: [
+          "All live sessions from Silver, Gold, and Platinum levels combined",
         ],
       },
     ],
-  },
-  {
-    id: "cohort_film",
-    name: "Film Cohort",
-    description: "Hands-on training in film production and storytelling",
-    color: "bg-blue-500",
-    status: "active",
-    variants: [
-      {
-        id: "basic",
-        name: "Basic",
-        description: "Introduction to filmmaking",
-        duration: "4 weeks",
-        features: ["Storyboarding", "Camera basics", "Short film project"],
-      },
-      {
-        id: "intermediate",
-        name: "Intermediate",
-        description: "Expand your filmmaking techniques",
-        duration: "8 weeks",
-        features: ["Editing workflow", "Lighting techniques", "Sound basics"],
-      },
-      {
-        id: "advanced",
-        name: "Advanced",
-        description: "Professional film production",
-        duration: "12 weeks",
-        features: ["Advanced cinematography", "Post-production", "Film festival prep"],
-      },
-    ],
-  },
-  {
-    id: "cohort_movie",
-    name: "Movie Cohort",
-    description: "Deep dive into movie-making from script to screen",
-    color: "bg-green-500",
-    status: "active",
-    variants: [
-      {
-        id: "basic",
-        name: "Basic",
-        description: "Learn the foundations of movie production",
-        duration: "4 weeks",
-        features: ["Scriptwriting basics", "Camera fundamentals", "Editing basics"],
-      },
-      {
-        id: "intermediate",
-        name: "Intermediate",
-        description: "Intermediate-level movie production",
-        duration: "8 weeks",
-        features: ["Cinematography", "Sound design", "Post-production"],
-      },
-      {
-        id: "advanced",
-        name: "Advanced",
-        description: "Advanced professional movie-making",
-        duration: "12 weeks",
-        features: ["Advanced directing", "VFX", "Distribution strategies"],
-      },
-    ],
-  },
+  }
 ];
 
 // --------------------------- COHORT SESSION ---------------------------
 const cohortSessions: Record<string, Record<string, SessionType[]>> = {
-  cohort_dance: {
-    dance_basic: [
-      { id: "dance_warmup", title: "Warm-up & Conditioning", description: "Learn proper warm-up techniques for dance", duration: "30 min" },
-      { id: "basic_steps", title: "Basic Steps", description: "Master foundational dance steps", duration: "45 min" },
-      { id: "intro_choreography", title: "Intro Choreography", description: "Put together simple routines", duration: "60 min" },
+  movie: {
+    silver: [
+      { id: "silver_session_1",
+        title: "Session One",
+        description: "",
+        duration: "" },
+      { id: "silver_session_2",
+        title: "Session Two",
+        description: "",
+        duration: "" },
+      { id: "silver_session_3",
+        title: "Session Three",
+        description: "",
+        duration: "" },
+      { id: "silver_session_4",
+        title: "Session Four",
+        description: "",
+        duration: "" },
+      { id: "silver_session_5",
+        title: "Session Five",
+        description: "",
+        duration: "" },
+      { id: "silver_session_6",
+        title: "Session Six",
+        description: "",
+        duration: "" },
+      { id: "silver_session_7",
+        title: "Session Seven",
+        description: "",
+        duration: "" },
+      { id: "silver_session_8",
+        title: "Session Eight",
+        description: "",
+        duration: "" },
     ],
-    dance_intermediate: [
-      { id: "inter_steps", title: "Intermediate Steps", description: "Learn more complex moves", duration: "50 min" },
-      { id: "improv_skills", title: "Improvisation Skills", description: "Build creativity through freestyle", duration: "45 min" },
-      { id: "stage_performance", title: "Stage Performance", description: "Practice performance techniques", duration: "60 min" },
+    gold: [
+      { id: "gold_session_1",
+        title: "Session One",
+        description: "",
+        duration: "" },
+      { id: "gold_session_2",
+        title: "Session Two",
+        description: "",
+        duration: "" },
+      { id: "gold_session_3",
+        title: "Session Three",
+        description: "",
+        duration: "" },
+      { id: "gold_session_4",
+        title: "Session Four",
+        description: "",
+        duration: "" },
+      { id: "gold_session_5",
+        title: "Session Five",
+        description: "",
+        duration: "" },
+      { id: "gold_session_6",
+        title: "Session Six",
+        description: "",
+        duration: "" },
+      { id: "gold_session_7",
+        title: "Session Seven",
+        description: "",
+        duration: "" },
+      { id: "gold_session_8",
+        title: "Session Eight",
+        description: "",
+        duration: "" },
     ],
-    dance_advanced: [
-      { id: "advanced_routines", title: "Advanced Routines", description: "Perform complex choreographies", duration: "60 min" },
-      { id: "creative_direction", title: "Creative Direction", description: "Learn to design your own routines", duration: "50 min" },
-      { id: "live_performance", title: "Live Performance", description: "Gain experience performing live", duration: "75 min" },
+    platinum: [
+      { id: "platinium_session_1",
+        title: "Session One",
+        description: "",
+        duration: "" },
+    { id: "platinium_session_2",
+        title: "Session Two",
+        description: "",
+        duration: "" },
+      { id: "platinium_session_3",
+        title: "Session Three",
+        description: "",
+        duration: "" },
+      { id: "platinium_session_4",
+        title: "Session Four",
+        description: "",
+        duration: "" },
+      { id: "platinium_session_5",
+        title: "Session Five",
+        description: "",
+        duration: "" },
+      { id: "platinium_session_6",
+        title: "Session Six",
+        description: "",
+        duration: "" },
+      { id: "platinium_session_7",
+        title: "Session Seven",
+        description: "",
+        duration: "" },
+      { id: "platinium_session_8",
+        title: "Session Eight",
+        description: "",
+        duration: "" },
     ],
   },
-
-  cohort_film: {
-    film_basic: [
-      { id: "film_intro", title: "Film Introduction", description: "Learn the basics of filmmaking", duration: "45 min" },
-      { id: "camera_basics", title: "Camera Basics", description: "Understand camera equipment and techniques", duration: "60 min" },
-      { id: "short_project", title: "Short Film Project", description: "Create a short film to practice skills", duration: "90 min" },
-    ],
-    film_intermediate: [
-      { id: "editing_workflow", title: "Editing Workflow", description: "Learn intermediate editing techniques", duration: "60 min" },
-      { id: "lighting_skills", title: "Lighting Skills", description: "Advanced lighting setups and techniques", duration: "50 min" },
-      { id: "sound_design", title: "Sound Design", description: "Learn to record and mix audio for films", duration: "60 min" },
-    ],
-    film_advanced: [
-      { id: "advanced_cinematography", title: "Advanced Cinematography", description: "Master camera and lens techniques", duration: "75 min" },
-      { id: "post_production", title: "Post Production", description: "Editing, color grading, VFX", duration: "90 min" },
-      { id: "film_festival_prep", title: "Film Festival Prep", description: "Prepare films for submission and screenings", duration: "60 min" },
-    ],
-  },
-
-  cohort_movie: {
-    movie_basic: [
-      { id: "script_basics", title: "Scriptwriting Basics", description: "Learn how to write compelling scripts", duration: "45 min" },
-      { id: "camera_intro", title: "Camera Introduction", description: "Understand basic camera work", duration: "60 min" },
-      { id: "editing_intro", title: "Editing Introduction", description: "Learn simple editing techniques", duration: "50 min" },
-    ],
-    movie_intermediate: [
-      { id: "cinematography_inter", title: "Intermediate Cinematography", description: "Explore advanced camera techniques", duration: "60 min" },
-      { id: "sound_inter", title: "Sound Design Intermediate", description: "Improve audio capture and mixing skills", duration: "50 min" },
-      { id: "postprod_inter", title: "Post Production Intermediate", description: "Advanced editing, color correction", duration: "60 min" },
-    ],
-    movie_advanced: [
-      { id: "directing_adv", title: "Advanced Directing", description: "Master directing actors and crews", duration: "75 min" },
-      { id: "vfx_adv", title: "VFX Techniques", description: "Learn professional visual effects", duration: "90 min" },
-      { id: "distribution_adv", title: "Distribution Strategies", description: "Understand film marketing and distribution", duration: "60 min" },
-    ],
-  },
-};
+}
 
 export {
   tonyBio,
@@ -1892,6 +515,6 @@ export {
   testimonials,
   courses,
   courseModules,
-  cohorts, 
+  cohorts,
   cohortSessions,
 };

@@ -13,13 +13,13 @@ const WELCOME_EMAIL_TEMPLATE_ID = parseInt(
 );
 
 const SENDER_EMAIL =
-  Deno.env.get("VITE_FROM_ADDRESS") || "hello@givegetgoeducation.co.uk";
-const SENDER_NAME = Deno.env.get("VITE_APP_NAME") || "GGGE Learning";
+  Deno.env.get("VITE_FROM_ADDRESS") || "";
+const SENDER_NAME = Deno.env.get("VITE_APP_NAME") || "TKOC Learning";
 const BREVO_API_KEY = Deno.env.get("BREVO_API_KEY");
 
 // Corrected environment variable access for Brevo List IDs
 const BREVO_ALL_CONTACT_LIST_ID = parseInt(
-  Deno.env.get("VITE_BREVO_ALL_CONTACT_LIST_ID") || "2"
+  Deno.env.get("VITE_BREVO_ALL_CONTACT_LIST_ID") || "1"
 );
 
 // Initialize Supabase Admin Client
@@ -147,7 +147,7 @@ async function syncBrevoContact(
     if (createResponse.ok) {
       console.log(`Contact ${email} successfully created in Brevo.`);
       return { success: true, message: "Contact created" };
-    } else if (createResponse.status === 409) {
+    } else if (createResponse.status === 409 ||  (createResponse.status === 400 && createResponseText.includes("duplicate_parameter"))) {
       // 409 Conflict means contact already exists
       console.log(`Contact ${email} already exists. Attempting to update.`);
       // 2. If contact exists, try to UPDATE it (PUT)

@@ -39,7 +39,7 @@ export default function LaunchTimer({ onPhaseChange }: LaunchTimerPropsType) {
         .order("starts_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching global phases:", error);
+        //console.error("Error fetching global phases:", error);
         setError("Failed to load launch phases.");
         setLoading(false);
         return;

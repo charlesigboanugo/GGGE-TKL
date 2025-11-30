@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { useCallback } from "react";
 import { supabase } from "@/supabase_client";
 import { CreditCard } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 // ----------------- Types -----------------
 export type CartItemType = {
   type: "course" | "cohort" | "subscription";
-  courseId?: string;
-  cohortId?: string;
-  variantId?: string;
+  courseId?: string | undefined;
+  cohortId?: string | undefined;
+  //subscriptionId?: string | undefined;
+  variantId?: string | undefined;
   name: string;
   variantName: string;
   price: number;
@@ -23,11 +25,6 @@ interface PaymentComponentProps {
   currentLaunchPhase: string | null;
   
 }
-
-// ----------------- Constants -----------------
-const BASE_URL = import.meta.env.VITE_PUBLIC_REDIRECT_URL || "http://localhost:5173";
-const PAYMENT_SUCCESS_URL = `${BASE_URL}/payment-success`;
-const PAYMENT_CANCEL_URL = `${BASE_URL}/payment-failed`;
 
 
 // ----------------- Component -----------------
@@ -61,11 +58,12 @@ export default function PaymentComponent({
         .from("user_subscriptions")
         .select("status")
         .eq("user_id", user.id)
-        .in("status", ["active", "trialing"])
+        .in("status", ["active", "trialing", "past_due", "unpaid"])
         .maybeSingle();
 
       if (subscriptionError && subscriptionError.code !== "PGRST116") {
-        console.error("Error fetching subscription:", subscriptionError);
+        toast.error("An error Occurred");
+        //console.error("Error fetching subscription:", subscriptionError);
       }
       setIsAlreadySubscribed(!!subscriptionData);
 
@@ -98,7 +96,7 @@ export default function PaymentComponent({
       }
       */
     } catch (err) {
-      console.error("Membership check error:", err);
+      //console.error("Membership check error:", err);
       setError("Failed to load user enrollment/membership status.");
     } finally {
       setLoadingChecks(false);
@@ -124,12 +122,16 @@ export default function PaymentComponent({
 
     return items.map((item, idx) => {
       const errors: string[] = [];
+      if (!item.type || !["course", "cohort", "subscription"].includes(item.type)) errors.push("invalid type");
+      if (item.type === "course" && !item.courseId) errors.push("courseId missing for course");
+      if (item.type === "cohort" && !item.cohortId) errors.push("cohortId missing for cohort");
+      //if (item.type === "subscription" && !item.subscriptionId) errors.push("subscriptionId missing for subscription");
       if (!item.name) errors.push("name missing");
       if (!item.variantName) errors.push("variantName missing");
       if (item.price === null || item.price === undefined || isNaN(Number(item.price))) {
         errors.push("invalid price");
       }
-      if (errors.length) throw new Error(`Cart item ${idx + 1}: ${errors.join(", ")}`);
+      if (errors.length) toast.error(`Cart item ${idx + 1}: ${errors.join(", ")}`);
       return { ...item, price: Number(item.price) };
     });
   };
@@ -140,7 +142,7 @@ export default function PaymentComponent({
     if (loading || loadingChecks || isDisabled) return;
     if (!user?.id) {
       setError("Please log in to proceed with payment.");
-      alert("Please log in to proceed with payment.");
+      toast.error("Please log in to proceed with payment.");
       return;
     }
 
@@ -148,12 +150,12 @@ export default function PaymentComponent({
     if (paymentType === "subscription") {
       if (isAlreadySubscribed) {
         setError("You are already a member.");
-        alert("You are already a member.");
+        toast("You are already a member.");
         return;
       }
       if (cartItems.length > 1) {
         setError("Invalid cart for membership subscription.");
-        alert("Invalid cart for membership subscription.");
+        toast.error("Invalid cart for membership subscription.");
         return;
       }
     }
@@ -161,7 +163,7 @@ export default function PaymentComponent({
     // One-time purchase rules
     if (paymentType === "one_time" && !isGlobalEnrollmentOpen) {
       setError("Course/Cohort enrollment is currently closed.");
-      alert("Course/Cohort enrollment is currently closed.");
+      toast("Course/Cohort enrollment is currently closed.");
       return;
     }
 
@@ -174,38 +176,21 @@ export default function PaymentComponent({
         JSON.stringify(cartItems, null, 2)
       );
 
-      const validatedItems = paymentType === "one_time" ? validateCartItems(cartItems) : [];
+      const validatedItems = validateCartItems(cartItems);
 
       console.log("Validated cart items:", validatedItems);
 
-      if (validatedItems.length < 1 && paymentType === "one_time")
+      if (validatedItems.length < 1)
       {
-        setError("No valid items in cart for one-time payment.");
-        alert("No valid items in cart for one-time payment.");
+        setError("No valid items in cart.");
+        toast("No valid items in cart for one-time payment.");
         return;
       }
 
-      const totalPrice =
-        validatedItems.length > 0
-          ? validatedItems.reduce((sum, i) => sum + i.price, 0)
-          : 0;
-
       const requestBody: any = {
         paymentType,
-        successUrl: PAYMENT_SUCCESS_URL,
-        cancelUrl: PAYMENT_CANCEL_URL,
-        currency: "gbp",
-        userId: user.id,
-        userEmail: user.email,
-        clientReferenceId: user.id,
-        metadata: { userId: user.id, email: user.email, no_balance: "true" },
         cartItems: validatedItems,
-        totalPrice,
       };
-
-      if (paymentType === "subscription") {
-        requestBody.priceId = import.meta.env.VITE_STRIPE_SUBSCRIPTION_PRICE_ID || "price_123";
-      }
 
       console.log(
         "Sending request body for checkout:",
@@ -215,7 +200,7 @@ export default function PaymentComponent({
       // Get session and call Edge Function
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session?.access_token)
-        throw new Error("Failed to retrieve session.");
+        toast.error("Failed to retrieve session.");
 
       const { data, error: invokeError } = await supabase.functions.invoke(
         "create-stripe-checkout-session",
@@ -226,16 +211,23 @@ export default function PaymentComponent({
         }
       );
 
-      console.log("Edge function response:", { data, error: invokeError });
+      /)console.log("Edge function response:", { data, error: invokeError });
       
       if (invokeError) throw new Error(invokeError.message || "Failed to create session");
-      if (!data?.sessionId) throw new Error("Invalid stripe sessionId(url) returned");
+      
+      //const datadump = await data.json();
 
-      window.location.href = data.sessionId;
+      //console.log("data:", data);
+      //console.log("TYPE OF DATA:", typeof data);
+      //console.log("data.sessionId:", data?.sessionId);
+
+      if (!data?.sessionUrl) throw new Error("Invalid stripe sessionId(url) returned");
+
+      window.location.href = data.sessionUrl;
     } catch (err: any) {
-      console.error("Payment initiation failed:", err);
-      setError(err.message || "Payment failed.");
-      alert(`Payment initiation failed: ${err.message || "Unknown error"}`);
+      //console.error("Payment initiation failed:", err);
+      toast.error("Payment failed.");
+      //throw new Error(`Payment initiation failed: ${err.message || "Unknown error"}`);
     } finally {
       setLoading(false);
     }

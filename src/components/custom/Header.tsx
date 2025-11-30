@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Sidebar } from "./index";
 import { FaUser } from "react-icons/fa";
 import { ButtonGhost } from "../utility";
-import { LogOut, Settings } from "lucide-react";
+import { HeartIcon, LogOut, Settings } from "lucide-react";
 import { useUser } from "@/contexts/UserContext";
 import { RiTeamFill } from "react-icons/ri";
 
@@ -18,13 +18,22 @@ export default function Header() {
   return (
     <header className="flex items-center justify-between md:justify-around px-6 md:px-16 lg:px-20 py-4 bg-[#222230] text-white shadow-lg relative z-20">
       <Link to="/" className="lg:hidden">
-        <img src="/assets/logoXL.png" alt="GGGE" className="h-8 md:h-10" />
+        <img src="/assets/logoXL.png" alt="TKOC" className="h-8 md:h-10" />
       </Link>
       <div className="hidden lg:flex lg:items-center lg:space-x-4">
         <Link to="/" className="flex items-center">
-          <img src="/assets/logoXL.png" alt="GGGE" className="h-8 md:h-10" />
+          <img
+            src="/assets/logoXL.png"
+            alt="TKOC"
+            className="h-10 md:h-14 lg:h-16 object-contain"
+            style={{
+              borderRadius: "100px", // soft, consistent rounding
+              width: "auto", 
+              height:"100%",         // scales proportionally
+              maxWidth: "300px"      // prevents it from being too big
+            }}
+          />
         </Link>
-
         <nav className="hidden md:flex items-center space-x-4 lg:space-x-6">
           <ButtonGhost
             isLink={true}
@@ -52,11 +61,11 @@ export default function Header() {
 
           <ButtonGhost
             isLink={true}
-            to="/course-buying-page"
+            to="/pricing-page"
             text={
               <>
                 <span className="font-bold text-lg">$</span>
-                <span className="font-semibold">Courses</span>
+                <span className="font-semibold">Pricing</span>
               </>
             }
             extraClasses="justify-start"

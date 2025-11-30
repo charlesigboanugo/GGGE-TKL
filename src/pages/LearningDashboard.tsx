@@ -85,6 +85,7 @@ interface PurchasedCohortVariant {
   cohortName: string;
   variantName: string;
   cohortColor: string;
+  fullProgram: boolean;
 }
 
 /* -------------------------- MODULE ITEM COMPONENT -------------------------- */
@@ -327,7 +328,7 @@ export default function LearningDashboard() {
         .eq("user_id", currentUser.id)
         .maybeSingle();
 
-      if (data?.status === "active") {
+      if (data?.status === "active" || data?.status === "trialing" || data?.status === "past_due" || data?.status === "unpaid") {
         setIsSubscribed(true);
       }
       setActiveTab(allCoursesData[0]?.id);
@@ -353,7 +354,7 @@ export default function LearningDashboard() {
         }));
         setAllCoursesData(mapped);
       } catch (err) {
-        console.error("Error fetching all courses or variants:", err);
+        //console.error("Error fetching all courses or variants:", err);
         setCoursesError("Failed to load courses");
       } finally {
         setLoadingCourses(false);
@@ -379,7 +380,7 @@ export default function LearningDashboard() {
         }));
         setAllCohortsData(mapped);
       } catch (err) {
-        console.error("Error fetching all cohort or variants:", err);
+        //console.error("Error fetching all cohort or variants:", err);
         setCohortsError("Failed to load cohorts");
       } finally {
         setLoadingCohorts(false);
@@ -409,7 +410,7 @@ export default function LearningDashboard() {
       setSessionDates(mappedDates);
 
       } catch (err) {
-        console.error("Error fetching session dates:", err);
+        //console.error("Error fetching session dates:", err);
         setSessionError("Failed to load session contents");
       } finally {
         setLoadingSessionDates(false);
@@ -477,17 +478,35 @@ export default function LearningDashboard() {
         const newPurchased: PurchasedCohortVariant[] = [];
         enrolls.forEach((e: CohortEnrollmentRecord) => {
           e.cohort_ids.forEach((cid, i) => {
-            const vid = e.cohort_variant_ids[i];
+            const purchasedVariantId = e.cohort_variant_ids[i];
             const cohort = allCohortsData.find((c) => c.id === cid);
-            const variant = cohort?.variants.find((v) => v.id === vid);
-            if (cohort && variant) {
-              newPurchased.push({
-                cohortId: cohort.id,
-                variantId: variant.id,
-                cohortName: cohort.name,
-                variantName: variant.name,
-                cohortColor: cohort.color,
+            if (!cohort) return;
+
+            // If "full_program" is purchased, add all variants
+            if (purchasedVariantId === "full_program") {
+              cohort.variants.forEach((v) => {
+                if (v.id === "full_program") return; // skip full_program variant itself
+                newPurchased.push({
+                  cohortId: cohort.id,
+                  variantId: v.id,
+                  cohortName: cohort.name,
+                  variantName: v.name,
+                  cohortColor: cohort.color,
+                  fullProgram: true,
+                });
               });
+            } else {
+              const variant = cohort?.variants.find((v) => v.id === purchasedVariantId);
+              if (cohort && variant) {
+                newPurchased.push({
+                  cohortId: cohort.id,
+                  variantId: variant.id,
+                  cohortName: cohort.name,
+                  variantName: variant.name,
+                  cohortColor: cohort.color,
+                  fullProgram: false,
+                });
+              }
             }
           });
         });
@@ -496,7 +515,7 @@ export default function LearningDashboard() {
         if (!activeCohortTab && newPurchased.length > 0)
           setActiveCohortTab(newPurchased[0].cohortId);
       } catch (err) {
-        console.error("Error fetching user cohort enrollments:", err);
+        //console.error("Error fetching user cohort enrollments:", err);
         setCohortsError("Failed to load user cohort enrollments");
       }
     }
@@ -677,30 +696,41 @@ export default function LearningDashboard() {
               <div className="w-full flex overflow-x-auto rounded-xl shadow-sm border border-gray-700">
                 {allCohortsData
                   .filter((c) => purchasedCohortVariants.some((p) => p.cohortId === c.id))
-                  .map((cohort) => (
-                    <button
-                      key={cohort.id}
-                      onClick={() => setActiveCohortTab(cohort.id)}
-                      className={`
-                        flex-1 text-center px-4 py-3 font-medium transition-all 
-                        border-r border-gray-700 last:border-r-0 
-                        whitespace-nowrap
-                        ${
-                          activeCohortTab === cohort.id
-                            ? `${cohort.color} text-white`
-                            : "bg-gray-900 text-gray-300 hover:bg-gray-800"
-                        }
-                      `}
-                      style={{
-                        minWidth: `${
-                          100 /
-                          purchasedCohortVariants.filter((p) => p.cohortId === cohort.id).length
-                        }%`,
-                      }}
-                    >
-                      {cohort.name}
-                    </button>
-                  ))}
+                  .map((cohort) => {
+                    const hasFullProgram = purchasedCohortVariants.some(
+                      (p) => p.cohortId === cohort.id && p.fullProgram
+                    );
+
+                    return (
+                      <button
+                        key={cohort.id}
+                        onClick={() => setActiveCohortTab(cohort.id)}
+                        className={`
+                          flex-1 text-center px-4 py-3 font-medium transition-all 
+                          border-r border-gray-700 last:border-r-0 
+                          whitespace-nowrap
+                          ${
+                            activeCohortTab === cohort.id
+                              ? `${cohort.color} text-white`
+                              : "bg-gray-900 text-gray-300 hover:bg-gray-800"
+                          }
+                        `}
+                        style={{
+                          minWidth: `${
+                            100 /
+                            purchasedCohortVariants.filter((p) => p.cohortId === cohort.id).length
+                          }%`,
+                        }}
+                      >
+                        <span>{cohort.name}</span>
+                        {hasFullProgram && (
+                          <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full ml-2">
+                            Full Program
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}   
               </div>
 
               {/* ---------------------------- COHORT CONTENT ---------------------------- */}

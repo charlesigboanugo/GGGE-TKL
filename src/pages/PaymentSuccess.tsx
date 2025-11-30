@@ -11,7 +11,7 @@ export default function PaymentSuccess() {
 
     // Redirect to a user-specific dashboard or profile after a short delay
     const timer = setTimeout(() => {
-      navigate("/course-dashboard"); // Adjust this route to your user's main dashboard
+      navigate("/learning-dashboard"); // Adjust this route to your user's main dashboard
     }, 3000);
 
     return () => clearTimeout(timer);
