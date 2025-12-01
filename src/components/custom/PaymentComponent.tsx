@@ -200,7 +200,7 @@ export default function PaymentComponent({
       // Get session and call Edge Function
       const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !sessionData.session?.access_token)
-        toast.error("Failed to retrieve session.");
+        throw new Error("Failed to retrieve session.");
 
       const { data, error: invokeError } = await supabase.functions.invoke(
         "create-stripe-checkout-session",
@@ -211,7 +211,7 @@ export default function PaymentComponent({
         }
       );
 
-      /)console.log("Edge function response:", { data, error: invokeError });
+      //console.log("Edge function response:", { data, error: invokeError });
       
       if (invokeError) throw new Error(invokeError.message || "Failed to create session");
       
